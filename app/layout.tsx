@@ -23,8 +23,8 @@ const ibmMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InsuriQ - Car Insurance Dashboard",
-  description: "Operations and Sales Dashboard for Egyptian Car Insurance",
+  title: "Sky Insurance - Car Insurance Portal",
+  description: "Operations and Sales Portal for Egyptian Car Insurance",
 };
 
 export default function RootLayout({

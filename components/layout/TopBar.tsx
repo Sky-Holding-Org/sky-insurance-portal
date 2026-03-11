@@ -22,12 +22,15 @@ export default function TopBar({ role }: { role: string }) {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/" className="text-slate-400">Home</BreadcrumbLink>
+              <BreadcrumbLink href="/" className="text-slate-400">
+                Home
+              </BreadcrumbLink>
             </BreadcrumbItem>
             {paths.map((path, index) => {
               const href = `/${paths.slice(0, index + 1).join("/")}`;
               const isLast = index === paths.length - 1;
-              const formattedName = path.charAt(0).toUpperCase() + path.slice(1);
+              const formattedName =
+                path.charAt(0).toUpperCase() + path.slice(1);
 
               return (
                 <React.Fragment key={path}>
@@ -52,8 +55,18 @@ export default function TopBar({ role }: { role: string }) {
 
       <div className="flex items-center gap-3">
         {/* Role Badge */}
-        <div className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-full text-xs font-semibold tracking-wider uppercase flex items-center gap-1.5 shadow-sm">
-          <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+        <div
+          className={`px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase flex items-center gap-1.5 shadow-sm ${
+            role === "operation"
+              ? "bg-amber-500/10 border border-amber-500/20 text-amber-500"
+              : "bg-teal-500/10 border border-teal-500/20 text-teal-500"
+          }`}
+        >
+          <div
+            className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+              role === "operation" ? "bg-amber-500" : "bg-teal-500"
+            }`}
+          />
           {role === "operation" ? "Operations" : "Sales"}
         </div>
       </div>
