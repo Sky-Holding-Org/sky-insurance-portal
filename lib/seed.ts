@@ -17,9 +17,9 @@ async function seed() {
   const { data: companies, error: cErr } = await supabase
     .from("insurance_companies")
     .insert([
-      { name: "MADA Insurance", name_ar: "مدى للتأمين", is_active: true },
-      { name: "Bupa Arabia", name_ar: "بوبا العربية", is_active: true },
-      { name: "Tawuniya", name_ar: "التعاونية", is_active: true },
+      { name: "MADA Insurance", is_active: true },
+      { name: "Bupa Arabia", is_active: true },
+      { name: "Tawuniya", is_active: true },
     ])
     .select();
 

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { AlertCircle, Loader2, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, Loader2, Eye, EyeOff, Codepen } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const router = useRouter();
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -34,37 +34,42 @@ export default function LoginPage() {
       // Check if it's invalid credentials
       if (error.message.includes("Invalid login credentials")) {
         // As a fallback for the demo, try to create the user if it doesn't exist yet
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { role: selectedRole }
-          }
-        });
-        
+        const { data: signUpData, error: signUpError } =
+          await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: { role: selectedRole },
+            },
+          });
+
         if (signUpError) {
           setError(error.message);
           setLoading(false);
           return;
         }
-        
+
         // If sign up worked and auto-logged in
         if (signUpData.session) {
-           router.push(selectedRole === "operation" ? "/operations/cars" : "/sales");
-           router.refresh();
+          router.push(
+            selectedRole === "operation" ? "/operations/cars" : "/sales",
+          );
+          router.refresh();
         } else {
-           setError("Invalid credentials. Please try again.");
+          setError("Invalid credentials. Please try again.");
         }
       } else {
         setError(error.message);
       }
     } else {
       const userRole = data.user?.user_metadata?.role || "sales";
-      
+
       // Enforce selected role matches actual DB role
       if (userRole !== selectedRole) {
         await supabase.auth.signOut();
-        setError(`This user does not have '${selectedRole}' privileges. Please select the correct role.`);
+        setError(
+          `This user does not have '${selectedRole}' privileges. Please select the correct role.`,
+        );
         setLoading(false);
         return;
       }
@@ -81,24 +86,13 @@ export default function LoginPage() {
       <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-xl shadow-xl overflow-hidden">
         <div className="p-6 border-b border-slate-800 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center border border-teal-500/50">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-teal-400"
-            >
-              <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
-            </svg>
+            <Codepen className="w-4 h-4" />
           </div>
-          <span className="text-xl font-bold font-syne text-white">Sky Insurance</span>
+          <span className="text-xl font-bold font-syne text-white">
+            Sky Insurance
+          </span>
         </div>
-        
+
         <div className="p-6">
           <h2 className="text-lg font-syne font-semibold text-white mb-6">
             Sign in to your account
@@ -113,24 +107,29 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-300">Email Address</label>
+              <label className="text-sm font-medium text-slate-300">
+                Email Address
+              </label>
               <Input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="sales@sky.eg"
+                placeholder="Enter your email"
                 className="bg-slate-950 border-slate-700 text-white placeholder:text-slate-500 w-full"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-300">Password</label>
+              <label className="text-sm font-medium text-slate-300">
+                Password
+              </label>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
+                  placeholder="Enter your password"
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-slate-950 border-slate-700 text-white w-full pr-10"
                 />
@@ -149,15 +148,31 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-              <label className="text-sm font-medium text-slate-300">Sign in as</label>
-              <RadioGroup value={selectedRole} onValueChange={setSelectedRole} className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-slate-300 ">
+                Sign in as
+              </label>
+              <RadioGroup
+                value={selectedRole}
+                onValueChange={setSelectedRole}
+                className="flex flex-row pt-2"
+              >
                 <div className="flex items-center space-x-3">
                   <RadioGroupItem value="sales" id="role-sales" />
-                  <label htmlFor="role-sales" className="text-sm text-slate-300 cursor-pointer">Sales Agent</label>
+                  <label
+                    htmlFor="role-sales"
+                    className="text-sm text-slate-300 cursor-pointer"
+                  >
+                    Sales Agent
+                  </label>
                 </div>
                 <div className="flex items-center space-x-3">
                   <RadioGroupItem value="operation" id="role-operation" />
-                  <label htmlFor="role-operation" className="text-sm text-slate-300 cursor-pointer">Operations Manager</label>
+                  <label
+                    htmlFor="role-operation"
+                    className="text-sm text-slate-300 cursor-pointer"
+                  >
+                    Operations Manager
+                  </label>
                 </div>
               </RadioGroup>
             </div>

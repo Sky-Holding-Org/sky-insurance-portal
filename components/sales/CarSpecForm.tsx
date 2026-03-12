@@ -57,7 +57,7 @@ export function CarSpecForm() {
   const debounceRef = useRef<NodeJS.Timeout>(undefined);
 
   const [localValue, setLocalValue] = useState(
-    store.carValue ? store.carValue.toLocaleString("en-US") : "",
+    store.carValue > 0 ? store.carValue.toLocaleString("en-US") : "",
   );
   const [localYear, setLocalYear] = useState(
     store.manufacturingYear ? store.manufacturingYear.toString() : "",
@@ -154,7 +154,7 @@ export function CarSpecForm() {
 
   const handleReset = () => {
     store.reset();
-    setLocalValue("1,000,000");
+    setLocalValue("");
     setLocalYear(new Date().getFullYear().toString());
   };
 
@@ -241,7 +241,7 @@ export function CarSpecForm() {
             value={localValue}
             onChange={(e) => handleValueChange(e.target.value)}
             className="w-full bg-slate-900 border-slate-700 border text-white font-ibm-mono text-lg rounded-lg h-[50px] pl-12 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:outline-none placeholder:text-slate-600 focus-visible:border-slate-700"
-            placeholder="1,500,000"
+            placeholder="Add car price"
           />
         </div>
       </div>

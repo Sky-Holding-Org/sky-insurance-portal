@@ -33,7 +33,7 @@ export async function POST(req: Request) {
         `
         *,
         insurance_companies (
-          id, name, name_ar
+          id, name
         )
       `,
       )
@@ -50,7 +50,6 @@ export async function POST(req: Request) {
       id: r.id,
       companyId: r.insurance_companies.id,
       companyName: r.insurance_companies.name,
-      companyNameAr: r.insurance_companies.name_ar,
       policyType: r.policy_type,
       fuelType: r.fuel_type,
       carCondition: r.car_condition,

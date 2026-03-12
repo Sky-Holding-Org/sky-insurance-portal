@@ -2,7 +2,7 @@
 
 import { useQuoteStore } from "@/lib/store/quoteStore";
 import { QuoteResultCard } from "./QuoteResultCard";
-import { Copy, AlertTriangle, Calculator, SearchX } from "lucide-react";
+import { AlertTriangle, Calculator, SearchX } from "lucide-react";
 import {
   Empty,
   EmptyDescription,
@@ -12,17 +12,6 @@ import {
 
 export function QuoteResultGrid() {
   const { quotes, isLoading, carAge, hasSearched } = useQuoteStore();
-
-  const handleCopyAll = () => {
-    // Collect text from all quotes
-    const text = quotes
-      .map(
-        (q, i) =>
-          `Option ${i + 1}: ${q.companyName} (${q.policyType}) - EGP ${q.annualPremium}`,
-      )
-      .join("\n");
-    navigator.clipboard.writeText(`Car Insurance Quotes:\n\n${text}`);
-  };
 
   if (isLoading) {
     return (
@@ -101,13 +90,6 @@ export function QuoteResultGrid() {
           <span className="text-sm font-medium text-slate-400">
             {companyCounts} Companies
           </span>
-          <button
-            onClick={handleCopyAll}
-            className="flex items-center gap-2 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded transition-colors"
-          >
-            <Copy className="w-3.5 h-3.5" />
-            Copy Summary
-          </button>
         </div>
       </div>
 

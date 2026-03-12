@@ -64,7 +64,7 @@ export function QuoteRuleTable() {
       .select(
         `
         *,
-        insurance_companies ( id, name, name_ar )
+        insurance_companies ( id, name )
       `,
       )
       .order("created_at", { ascending: false });
@@ -74,7 +74,6 @@ export function QuoteRuleTable() {
         id: r.id,
         companyId: r.insurance_companies.id,
         companyName: r.insurance_companies.name,
-        companyNameAr: r.insurance_companies.name_ar,
         policyType: r.policy_type,
         fuelType: r.fuel_type,
         carCondition: r.car_condition,

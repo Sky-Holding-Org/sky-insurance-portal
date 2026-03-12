@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Edit2, Trash2, Plus, Search, ChevronRight, Car, ListFilter } from "lucide-react";
+import {
+  Edit2,
+  Trash2,
+  Plus,
+  Search,
+  ChevronRight,
+  Car,
+  ListFilter,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CarMake } from "@/hooks/useCarMakes";
 import { CarMakeFormSheet } from "./CarMakeFormSheet";
@@ -48,13 +56,13 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
     setIsLoading(true);
     const supabase = createClient();
     let query = supabase.from("car_makes").select("*");
-    
+
     if (sortBy === "alphabet") {
       query = query.order("name", { ascending: true });
     } else {
       query = query.order("created_at", { ascending: false });
     }
-    
+
     const { data } = await query;
     if (data) setMakes(data);
     setIsLoading(false);
@@ -100,21 +108,21 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
           </span>
         </h3>
         <div className="flex items-center gap-2">
-            <CarCSVUploader onSuccess={fetchMakes} />
-            <button
+          <CarCSVUploader onSuccess={fetchMakes} />
+          <button
             onClick={() => {
-                setEditingMake(undefined);
-                setIsFormOpen(true);
+              setEditingMake(undefined);
+              setIsFormOpen(true);
             }}
             className="p-1.5 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded transition-colors"
-            >
+          >
             <Plus className="w-4 h-4" />
-            </button>
+          </button>
         </div>
       </div>
 
-      <div className="p-3 border-b border-border shrink-0">
-        <div className="relative">
+      <div className="p-3 border-b border-border shrink-0 flex items-center gap-2">
+        <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <Input
             type="text"
@@ -124,18 +132,30 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
             className="w-full bg-slate-950 border border-slate-800 text-sm rounded-lg pl-9 pr-3 py-2 text-white h-[38px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500"
           />
         </div>
-        <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
-          <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-slate-300 h-[38px] hover:bg-slate-900 transition-colors focus:ring-1 focus:ring-teal-500 mt-3">
-            <div className="flex items-center gap-2 text-sm">
-              <ListFilter className="w-4 h-4 text-teal-500" />
-              <SelectValue placeholder="Sort by" />
-            </div>
-          </SelectTrigger>
+        <div className="shrink-0 w-36">
+          <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+            <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-slate-300 h-[38px] hover:bg-slate-900 transition-colors focus:ring-1 focus:ring-teal-500">
+              <div className="flex items-center gap-2 text-sm">
+                <ListFilter className="w-4 h-4 text-teal-500" />
+                <SelectValue placeholder="Sort by" />
+              </div>
+            </SelectTrigger>
           <SelectContent className="bg-slate-900 border-slate-800 text-white">
-            <SelectItem value="alphabet" className="cursor-pointer focus:bg-slate-800 focus:text-white">Alphabetical</SelectItem>
-            <SelectItem value="recent" className="cursor-pointer focus:bg-slate-800 focus:text-white">Last Added</SelectItem>
+            <SelectItem
+              value="alphabet"
+              className="cursor-pointer focus:bg-slate-800 focus:text-white"
+            >
+              Alphabetical
+            </SelectItem>
+            <SelectItem
+              value="recent"
+              className="cursor-pointer focus:bg-slate-800 focus:text-white"
+            >
+              Last Added
+            </SelectItem>
           </SelectContent>
         </Select>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">

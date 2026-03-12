@@ -2,7 +2,7 @@
 
 import { QuoteResult, formatEGP } from "@/lib/quote-engine";
 import { cn } from "@/lib/utils";
-import { Copy, Plus, ChevronDown, Check } from "lucide-react";
+import { Copy, ChevronDown, Check } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -21,10 +21,11 @@ export function QuoteResultCard({ quote, rank }: Props) {
 
   const handleCopy = () => {
     const text = `Insurance Quote 🚘
-Company: ${quote.companyName} (${quote.companyNameAr})
+Company: ${quote.companyName}
 Policy: ${quote.policyType === "private" ? "Private" : "Gold"}
 Rate: ${quote.ratePercentage}%
 Annual Premium: ${formatEGP(quote.annualPremium)}
+Monthly Premium: ${formatEGP(quote.annualPremium / 12)}
 
 Conditions:
 ${quote.conditions.map((c) => `- ${c}`).join("\n")}`;
@@ -33,6 +34,8 @@ ${quote.conditions.map((c) => `- ${c}`).join("\n")}`;
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const monthlyPremium = quote.annualPremium / 12;
 
   return (
     <motion.div
@@ -78,9 +81,6 @@ ${quote.conditions.map((c) => `- ${c}`).join("\n")}`;
                   </span>
                 )}
               </h4>
-              <span className="text-xs text-slate-400 font-medium">
-                {quote.companyNameAr}
-              </span>
             </div>
           </div>
 
@@ -99,39 +99,52 @@ ${quote.conditions.map((c) => `- ${c}`).join("\n")}`;
         </div>
 
         <div className="flex flex-col mb-5">
-          <span className="text-xs text-slate-500 mb-1 font-medium">
-            Annual Premium
-          </span>
-          <div className="flex items-end gap-3">
-            <span className="font-ibm-mono text-3xl font-bold text-white tracking-tight">
-              {formatEGP(quote.annualPremium).replace("EGP", "").trim()}{" "}
-              <span className="text-lg text-slate-400 font-medium">EGP</span>
-            </span>
-            <span className="text-sm text-teal-400 mb-1 font-medium bg-teal-500/10 px-2 py-0.5 rounded">
-              Rate: {quote.ratePercentage.toFixed(2)}%
-            </span>
+          <div className="flex justify-between items-end mb-1">
+             <span className="text-xs text-slate-500 font-medium">
+               Annual Premium
+             </span>
+             <span className="text-xs text-slate-500 font-medium">
+               Monthly
+             </span>
+          </div>
+          <div className="flex items-end justify-between">
+            <div className="flex items-end gap-3 flex-wrap">
+              <span className="font-ibm-mono text-3xl font-bold text-white tracking-tight">
+                {formatEGP(quote.annualPremium).replace("EGP", "").trim()}{" "}
+                <span className="text-lg text-slate-400 font-medium">EGP</span>
+              </span>
+              <span className="text-sm text-teal-400 mb-1 font-medium bg-teal-500/10 px-2 py-0.5 rounded">
+                Rate: {quote.ratePercentage.toFixed(2)}%
+              </span>
+            </div>
+            <div className="text-right whitespace-nowrap mb-1">
+              <span className="font-ibm-mono text-xl font-bold text-slate-200">
+                {formatEGP(monthlyPremium).replace("EGP", "").trim()}{" "}
+                <span className="text-sm text-slate-500">EGP</span>
+              </span>
+            </div>
           </div>
         </div>
 
         <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors group"
+            className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors group py-1"
           >
+            <span className="font-medium">
+              {quote.conditions.length} Conditions applied
+            </span>
             <ChevronDown
               className={cn(
                 "w-4 h-4 transition-transform",
                 expanded && "rotate-180",
               )}
             />
-            <span className="font-medium">
-              {quote.conditions.length} Conditions applied
-            </span>
           </button>
-
+          
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs font-medium text-slate-400 bg-slate-800 hover:bg-slate-700 hover:text-white px-3 py-1.5 rounded transition-colors"
+            className="flex items-center gap-1.5 text-xs font-medium text-slate-400 bg-slate-800 hover:bg-slate-700 hover:text-white px-3 py-1.5 rounded transition-colors shrink-0"
           >
             {copied ? (
               <Check className="w-3.5 h-3.5 text-teal-400" />

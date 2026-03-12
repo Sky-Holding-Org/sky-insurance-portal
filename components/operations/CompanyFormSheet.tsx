@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sheet";
 
 type CompanyFormProps = {
-  company?: { id: string; name: string; name_ar: string; is_active: boolean };
+  company?: { id: string; name: string; is_active: boolean };
   onClose: () => void;
   onSuccess: () => void;
 };
@@ -27,7 +27,6 @@ export function CompanyFormSheet({
   onSuccess,
 }: CompanyFormProps) {
   const [name, setName] = useState(company?.name || "");
-  const [nameAr, setNameAr] = useState(company?.name_ar || "");
   const [isActive, setIsActive] = useState(company?.is_active ?? true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,7 +39,6 @@ export function CompanyFormSheet({
 
     const payload = {
       name,
-      name_ar: nameAr,
       is_active: isActive,
     };
 
@@ -86,7 +84,7 @@ export function CompanyFormSheet({
           >
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">
-                Company Name (English)
+                Company Name
               </label>
               <Input
                 required
@@ -94,20 +92,6 @@ export function CompanyFormSheet({
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. MADA Insurances"
                 className="w-full bg-slate-950 border border-slate-700 text-white rounded-lg px-4 py-2.5 h-[42px] focus-visible:outline-none focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500 transition-colors"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">
-                Company Name (Arabic){" "}
-                <span className="text-slate-500 text-xs">optional</span>
-              </label>
-              <Input
-                value={nameAr}
-                onChange={(e) => setNameAr(e.target.value)}
-                placeholder="مدي للتأمين"
-                dir="rtl"
-                className="w-full bg-slate-950 border border-slate-700 text-white rounded-lg px-4 py-2.5 h-[42px] focus-visible:outline-none focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500 transition-colors font-sans"
               />
             </div>
 

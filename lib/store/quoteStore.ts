@@ -46,7 +46,7 @@ interface QuoteState {
 export const useQuoteStore = create<QuoteState>((set) => ({
   makeId: null,
   modelId: null,
-  carValue: 1000000,
+  carValue: 0,
   fuelType: "gasoline",
   carCondition: "new",
   manufacturingYear: new Date().getFullYear(),
@@ -75,7 +75,7 @@ export const useQuoteStore = create<QuoteState>((set) => ({
   reset: () => set({
     makeId: null,
     modelId: null,
-    carValue: 1000000,
+    carValue: 0,
     fuelType: "gasoline",
     carCondition: "new",
     manufacturingYear: new Date().getFullYear(),

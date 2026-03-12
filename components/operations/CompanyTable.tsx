@@ -43,7 +43,6 @@ import { motion } from "framer-motion";
 type Company = {
   id: string;
   name: string;
-  name_ar: string;
   is_active: boolean;
 };
 
@@ -106,8 +105,7 @@ export function CompanyTable() {
 
   const filtered = companies.filter(
     (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.name_ar?.includes(search),
+      c.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -162,7 +160,6 @@ export function CompanyTable() {
           <TableHeader className="bg-slate-900 sticky top-0 border-b border-slate-800 text-xs uppercase font-medium text-slate-400 z-10 shadow-sm">
             <TableRow className="border-b-0 hover:bg-transparent">
               <TableHead className="px-6 py-4 h-auto">Company Name</TableHead>
-              <TableHead className="px-6 py-4 h-auto">Arabic Name</TableHead>
               <TableHead className="px-6 py-4 h-auto">Status</TableHead>
               <TableHead className="px-6 py-4 text-right h-auto">
                 Actions
@@ -180,9 +177,6 @@ export function CompanyTable() {
                     <div className="h-4 bg-slate-800/60 rounded w-32"></div>
                   </TableCell>
                   <TableCell className="px-6 py-5">
-                    <div className="h-4 bg-slate-800/60 rounded w-24"></div>
-                  </TableCell>
-                  <TableCell className="px-6 py-5">
                     <div className="h-5 bg-slate-800/60 rounded-full w-10"></div>
                   </TableCell>
                   <TableCell className="px-6 py-5">
@@ -192,7 +186,7 @@ export function CompanyTable() {
               ))
             ) : filtered.length === 0 ? (
               <TableRow className="border-b-0 hover:bg-transparent">
-                <TableCell colSpan={4} className="px-6 py-16">
+                <TableCell colSpan={3} className="px-6 py-16">
                   {search ? (
                     <Empty>
                       <EmptyMedia>
@@ -226,9 +220,6 @@ export function CompanyTable() {
                 >
                   <TableCell className="px-6 py-5 font-medium text-slate-200">
                     {company.name}
-                  </TableCell>
-                  <TableCell className="px-6 py-5 font-sans" dir="rtl">
-                    {company.name_ar}
                   </TableCell>
                   <TableCell className="px-6 py-5">
                     <Switch

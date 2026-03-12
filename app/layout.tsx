@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Syne, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { MobileBlocker } from "@/components/layout/MobileBlocker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,7 +44,10 @@ export default function RootLayout({
       )}
     >
       <body className="antialiased min-h-screen bg-background text-foreground selection:bg-teal-500/30 font-sans">
-        {children}
+        <MobileBlocker />
+        <div className="hidden md:block min-h-screen">
+          {children}
+        </div>
       </body>
     </html>
   );

@@ -19,7 +19,6 @@ export interface QuoteRule {
   id: string;
   companyId: string;
   companyName: string;
-  companyNameAr: string;
   policyType: PolicyType;
   fuelType: FuelType;
   carCondition: CarCondition | null; // null represents "any" for legacy data compatibility
@@ -43,7 +42,6 @@ export interface QuoteResult {
   ruleId: string;
   companyId: string;
   companyName: string;
-  companyNameAr: string;
   policyType: PolicyType;
   label?: string;
   ratePercentage: number;
@@ -166,7 +164,6 @@ function evaluateRule(
     ruleId: rule.id,
     companyId: rule.companyId,
     companyName: rule.companyName,
-    companyNameAr: rule.companyNameAr,
     policyType: rule.policyType,
     label: rule.label,
     ratePercentage: rule.ratePercentage,
