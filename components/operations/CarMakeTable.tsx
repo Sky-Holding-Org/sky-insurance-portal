@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Edit2, Trash2, Plus, Search, ChevronRight, Car } from "lucide-react";
+import { Edit2, Trash2, Plus, Search, ChevronRight, Car, ListFilter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CarMake } from "@/hooks/useCarMakes";
 import { CarMakeFormSheet } from "./CarMakeFormSheet";
@@ -14,6 +14,13 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,12 +41,21 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
   const [makes, setMakes] = useState<CarMake[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"alphabet" | "recent">("alphabet");
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchMakes = async () => {
     setIsLoading(true);
     const supabase = createClient();
-    const { data } = await supabase.from("car_makes").select("*").order("name");
+    let query = supabase.from("car_makes").select("*");
+    
+    if (sortBy === "alphabet") {
+      query = query.order("name", { ascending: true });
+    } else {
+      query = query.order("created_at", { ascending: false });
+    }
+    
+    const { data } = await query;
     if (data) setMakes(data);
     setIsLoading(false);
   };
@@ -52,7 +68,7 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
 
   useEffect(() => {
     fetchMakes();
-  }, []);
+  }, [sortBy]);
 
   const confirmDelete = async () => {
     if (!deletingId) return;
@@ -108,6 +124,18 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
             className="w-full bg-slate-950 border border-slate-800 text-sm rounded-lg pl-9 pr-3 py-2 text-white h-[38px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500"
           />
         </div>
+        <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+          <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-slate-300 h-[38px] hover:bg-slate-900 transition-colors focus:ring-1 focus:ring-teal-500 mt-3">
+            <div className="flex items-center gap-2 text-sm">
+              <ListFilter className="w-4 h-4 text-teal-500" />
+              <SelectValue placeholder="Sort by" />
+            </div>
+          </SelectTrigger>
+          <SelectContent className="bg-slate-900 border-slate-800 text-white">
+            <SelectItem value="alphabet" className="cursor-pointer focus:bg-slate-800 focus:text-white">Alphabetical</SelectItem>
+            <SelectItem value="recent" className="cursor-pointer focus:bg-slate-800 focus:text-white">Last Added</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">

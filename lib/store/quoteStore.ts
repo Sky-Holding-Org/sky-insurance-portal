@@ -50,7 +50,7 @@ export const useQuoteStore = create<QuoteState>((set) => ({
   fuelType: "gasoline",
   carCondition: "new",
   manufacturingYear: new Date().getFullYear(),
-  electricAgencyStatus: undefined,
+  electricAgencyStatus: "agency",
 
   quotes: [],
   carAge: 0,
@@ -59,12 +59,15 @@ export const useQuoteStore = create<QuoteState>((set) => ({
 
   setField: (field, value) => {
     // If the user changes any input field, reset the search state so the initial placeholder returns
-    set((state) => ({
-      ...state,
-      [field]: value,
-      hasSearched: false,
-      quotes: [],
-    }));
+    set((state) => {
+      if (state[field] === value) return state;
+      return {
+        ...state,
+        [field]: value,
+        hasSearched: false,
+        quotes: [],
+      };
+    });
   },
   setResults: (quotes, carAge) =>
     set({ quotes, carAge, isLoading: false, hasSearched: true }),
@@ -76,7 +79,7 @@ export const useQuoteStore = create<QuoteState>((set) => ({
     fuelType: "gasoline",
     carCondition: "new",
     manufacturingYear: new Date().getFullYear(),
-    electricAgencyStatus: undefined,
+    electricAgencyStatus: "agency",
     quotes: [],
     carAge: 0,
     isLoading: false,

@@ -17,6 +17,39 @@ import {
 } from "@/components/ui/combobox";
 import { RotateCcw } from "lucide-react";
 
+function ToggleButtonGroup({
+  options,
+  value,
+  onChange,
+  activeColorClass = "bg-teal-500 text-white",
+  inactiveColorClass = "text-slate-400 hover:text-slate-200",
+  containerClass = "bg-slate-900 border-slate-800",
+}: {
+  options: { label: string; value: any }[];
+  value: any;
+  onChange: (val: any) => void;
+  activeColorClass?: string;
+  inactiveColorClass?: string;
+  containerClass?: string;
+}) {
+  return (
+    <div className={cn("flex rounded-lg p-1 border", containerClass)}>
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => onChange(opt.value)}
+          className={cn(
+            "flex-1 text-xs font-medium py-2 rounded-md transition-colors",
+            value === opt.value ? activeColorClass : inactiveColorClass,
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function CarSpecForm() {
   const store = useQuoteStore();
   const { makes, isLoading: isMakesLoading } = useCarMakes();
@@ -218,60 +251,28 @@ export function CarSpecForm() {
           <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
             Fuel Type
           </label>
-          <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
-            <button
-              onClick={() => store.setField("fuelType", "gasoline")}
-              className={cn(
-                "flex-1 text-xs font-medium py-2 rounded-md transition-colors",
-                store.fuelType === "gasoline"
-                  ? "bg-teal-500 text-white"
-                  : "text-slate-400 hover:text-slate-200",
-              )}
-            >
-              Gasoline
-            </button>
-            <button
-              onClick={() => store.setField("fuelType", "electric")}
-              className={cn(
-                "flex-1 text-xs font-medium py-2 rounded-md transition-colors",
-                store.fuelType === "electric"
-                  ? "bg-teal-500 text-white"
-                  : "text-slate-400 hover:text-slate-200",
-              )}
-            >
-              Electric
-            </button>
-          </div>
+          <ToggleButtonGroup
+            options={[
+              { label: "Gasoline", value: "gasoline" },
+              { label: "Electric", value: "electric" }
+            ]}
+            value={store.fuelType}
+            onChange={(val) => store.setField("fuelType", val)}
+          />
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
             Condition
           </label>
-          <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
-            <button
-              onClick={() => store.setField("carCondition", "new")}
-              className={cn(
-                "flex-1 text-xs font-medium py-2 rounded-md transition-colors",
-                store.carCondition === "new"
-                  ? "bg-teal-500 text-white"
-                  : "text-slate-400 hover:text-slate-200",
-              )}
-            >
-              New
-            </button>
-            <button
-              onClick={() => store.setField("carCondition", "used")}
-              className={cn(
-                "flex-1 text-xs font-medium py-2 rounded-md transition-colors",
-                store.carCondition === "used"
-                  ? "bg-teal-500 text-white"
-                  : "text-slate-400 hover:text-slate-200",
-              )}
-            >
-              Used
-            </button>
-          </div>
+          <ToggleButtonGroup
+            options={[
+              { label: "New", value: "new" },
+              { label: "Used", value: "used" }
+            ]}
+            value={store.carCondition}
+            onChange={(val) => store.setField("carCondition", val)}
+          />
         </div>
       </div>
 
@@ -292,32 +293,17 @@ export function CarSpecForm() {
           <label className="block text-xs font-semibold text-amber-500 uppercase tracking-wider mb-2">
             Agency Status (Electric Only)
           </label>
-          <div className="flex bg-amber-500/10 rounded-lg p-1 border border-amber-500/20">
-            <button
-              onClick={() => store.setField("electricAgencyStatus", "agency")}
-              className={cn(
-                "flex-1 text-xs font-medium py-2 rounded-md transition-colors",
-                store.electricAgencyStatus === "agency"
-                  ? "bg-amber-500 text-white"
-                  : "text-amber-500/70 hover:text-amber-500",
-              )}
-            >
-              With Agency
-            </button>
-            <button
-              onClick={() =>
-                store.setField("electricAgencyStatus", "no_agency")
-              }
-              className={cn(
-                "flex-1 text-xs font-medium py-2 rounded-md transition-colors",
-                store.electricAgencyStatus === "no_agency"
-                  ? "bg-amber-500 text-white"
-                  : "text-amber-500/70 hover:text-amber-500",
-              )}
-            >
-              Without Agency
-            </button>
-          </div>
+          <ToggleButtonGroup
+            options={[
+              { label: "With Agency", value: "agency" },
+              { label: "Without Agency", value: "no_agency" }
+            ]}
+            value={store.electricAgencyStatus}
+            onChange={(val) => store.setField("electricAgencyStatus", val)}
+            containerClass="bg-amber-500/10 border-amber-500/20"
+            activeColorClass="bg-amber-500 text-white"
+            inactiveColorClass="text-amber-500/70 hover:text-amber-500"
+          />
         </div>
       )}
 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertCircle, Loader2, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
@@ -148,17 +148,18 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2">
+            <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
               <label className="text-sm font-medium text-slate-300">Sign in as</label>
-              <Select value={selectedRole} onValueChange={setSelectedRole}>
-                <SelectTrigger className="bg-slate-950 border-slate-700 text-white w-full">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-white">
-                  <SelectItem value="sales" className="hover:bg-slate-800">Sales Agent</SelectItem>
-                  <SelectItem value="operation" className="hover:bg-slate-800">Operations Manager</SelectItem>
-                </SelectContent>
-              </Select>
+              <RadioGroup value={selectedRole} onValueChange={setSelectedRole} className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-3">
+                  <RadioGroupItem value="sales" id="role-sales" />
+                  <label htmlFor="role-sales" className="text-sm text-slate-300 cursor-pointer">Sales Agent</label>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <RadioGroupItem value="operation" id="role-operation" />
+                  <label htmlFor="role-operation" className="text-sm text-slate-300 cursor-pointer">Operations Manager</label>
+                </div>
+              </RadioGroup>
             </div>
 
             <Button

@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Edit2, Trash2, Plus, Search, Building2 } from "lucide-react";
+import { Edit2, Trash2, Plus, Search, Building2, ListFilter } from "lucide-react";
 import { CompanyFormSheet } from "./CompanyFormSheet";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,13 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -44,6 +51,7 @@ export function CompanyTable() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"alphabet" | "recent">("alphabet");
 
   // Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -55,17 +63,22 @@ export function CompanyTable() {
   const fetchCompanies = async () => {
     setIsLoading(true);
     const supabase = createClient();
-    const { data } = await supabase
-      .from("insurance_companies")
-      .select("*")
-      .order("name");
+    let query = supabase.from("insurance_companies").select("*");
+    
+    if (sortBy === "alphabet") {
+      query = query.order("name", { ascending: true });
+    } else {
+      query = query.order("created_at", { ascending: false });
+    }
+    
+    const { data } = await query;
     if (data) setCompanies(data);
     setIsLoading(false);
   };
 
   useEffect(() => {
     fetchCompanies();
-  }, []);
+  }, [sortBy]);
 
   const toggleActive = async (id: string, current: boolean) => {
     const supabase = createClient();
@@ -118,6 +131,18 @@ export function CompanyTable() {
               className="w-full bg-slate-950 border border-slate-800 text-sm rounded-lg pl-9 pr-3 py-2 h-[38px] text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500"
             />
           </div>
+          <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+            <SelectTrigger className="w-40 bg-slate-950 border-slate-800 text-slate-300 h-[38px] hover:bg-slate-900 transition-colors focus:ring-1 focus:ring-teal-500">
+              <div className="flex items-center gap-2 text-sm">
+                <ListFilter className="w-4 h-4 text-teal-500" />
+                <SelectValue placeholder="Sort by" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="bg-slate-900 border-slate-800 text-white">
+              <SelectItem value="alphabet" className="cursor-pointer focus:bg-slate-800 focus:text-white">Alphabetical</SelectItem>
+              <SelectItem value="recent" className="cursor-pointer focus:bg-slate-800 focus:text-white">Last Added</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <button
           onClick={() => {

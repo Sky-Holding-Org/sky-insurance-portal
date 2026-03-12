@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Edit2, Trash2, Plus, Filter, Search, FileText } from "lucide-react";
+import { Edit2, Trash2, Plus, Filter, Search, FileText, ListFilter } from "lucide-react";
 import type { QuoteRule } from "@/lib/quote-engine";
 import { formatEGP } from "@/lib/quote-engine";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Empty,
   EmptyDescription,
   EmptyMedia,
@@ -40,6 +47,7 @@ export function QuoteRuleTable() {
   const [makes, setMakes] = useState<{ id: string; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"alphabet" | "recent">("alphabet");
 
   // Modal states
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -85,6 +93,13 @@ export function QuoteRuleTable() {
         excludedMakeIds: r.excluded_make_ids,
         is_active: r.is_active, // Note: extending type locally for the table
       }));
+      
+      if (sortBy === "alphabet") {
+        normalized.sort((a, b) => a.companyName.localeCompare(b.companyName));
+      } else {
+        // already sorted descending by created_at in the DB query
+      }
+      
       setRules(normalized as any);
     }
 
@@ -112,7 +127,7 @@ export function QuoteRuleTable() {
 
   useEffect(() => {
     fetchRules();
-  }, []);
+  }, [sortBy]);
 
   const confirmDelete = async () => {
     if (!deletingId) return;
@@ -182,6 +197,18 @@ export function QuoteRuleTable() {
               className="w-full bg-slate-950 border border-slate-800 text-sm rounded-lg pl-9 pr-3 py-2 h-[38px] text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500"
             />
           </div>
+          <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+            <SelectTrigger className="w-40 bg-slate-950 border-slate-800 text-slate-300 h-[38px] hover:bg-slate-900 transition-colors focus:ring-1 focus:ring-teal-500">
+              <div className="flex items-center gap-2 text-sm">
+                <ListFilter className="w-4 h-4 text-teal-500" />
+                <SelectValue placeholder="Sort by" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="bg-slate-900 border-slate-800 text-white">
+              <SelectItem value="alphabet" className="cursor-pointer focus:bg-slate-800 focus:text-white">Alphabetical</SelectItem>
+              <SelectItem value="recent" className="cursor-pointer focus:bg-slate-800 focus:text-white">Last Added</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <button
           onClick={() => {
