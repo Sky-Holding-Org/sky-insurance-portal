@@ -99,25 +99,26 @@ export function CarSpecForm() {
     store.setResults,
   ]);
 
-  useEffect(() => {
-    // Only fetch if required fields are present
-    if (
-      store.makeId &&
-      store.carValue >= 10000 &&
-      store.manufacturingYear >= 1990
-    ) {
-      triggerSearch();
-    }
-  }, [
-    store.makeId,
-    store.modelId,
-    store.carValue,
-    store.fuelType,
-    store.carCondition,
-    store.manufacturingYear,
-    store.electricAgencyStatus,
-    triggerSearch,
-  ]);
+  //   useEffect(() => {
+  //   // Only fetch if required fields are present
+  //   if (
+  //     store.makeId &&
+  //     store.carValue >= 10000 &&
+  //     store.manufacturingYear >= 1990
+  //   ) {
+  //     triggerSearch();
+  //   }
+  // }, [
+  //   store.makeId,
+  //   store.modelId,
+  //   store.carValue,
+  //   store.fuelType,
+  //   store.carCondition,
+  //   store.manufacturingYear,
+  //   store.electricAgencyStatus,
+  //   triggerSearch,
+  // ]);
+  // Removed auto-trigger useEffect so it only calculates on button press
 
   const handleValueChange = (val: string) => {
     const clean = val.replace(/\D/g, "");
@@ -254,7 +255,7 @@ export function CarSpecForm() {
           <ToggleButtonGroup
             options={[
               { label: "Gasoline", value: "gasoline" },
-              { label: "Electric", value: "electric" }
+              { label: "Electric", value: "electric" },
             ]}
             value={store.fuelType}
             onChange={(val) => store.setField("fuelType", val)}
@@ -268,7 +269,7 @@ export function CarSpecForm() {
           <ToggleButtonGroup
             options={[
               { label: "New", value: "new" },
-              { label: "Used", value: "used" }
+              { label: "Used", value: "used" },
             ]}
             value={store.carCondition}
             onChange={(val) => store.setField("carCondition", val)}
@@ -296,7 +297,7 @@ export function CarSpecForm() {
           <ToggleButtonGroup
             options={[
               { label: "With Agency", value: "agency" },
-              { label: "Without Agency", value: "no_agency" }
+              { label: "Without Agency", value: "no_agency" },
             ]}
             value={store.electricAgencyStatus}
             onChange={(val) => store.setField("electricAgencyStatus", val)}

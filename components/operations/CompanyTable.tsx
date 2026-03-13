@@ -80,12 +80,24 @@ export function CompanyTable() {
   }, [sortBy]);
 
   const toggleActive = async (id: string, current: boolean) => {
+    // Optimistic UI update to prevent loading screen flash
+    setCompanies((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, is_active: !current } : c)),
+    );
+
     const supabase = createClient();
-    await supabase
+    const { error } = await supabase
       .from("insurance_companies")
       .update({ is_active: !current })
       .eq("id", id);
-    fetchCompanies();
+
+    if (error) {
+      // Revert if API fails
+      setCompanies((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, is_active: current } : c)),
+      );
+      alert("Failed to update status: " + error.message);
+    }
   };
 
   const confirmDelete = async () => {
