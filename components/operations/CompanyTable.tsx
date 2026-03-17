@@ -7,6 +7,7 @@ import { Edit2, Trash2, Plus, Search, Building2, ListFilter } from "lucide-react
 import { CompanyFormSheet } from "./CompanyFormSheet";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Empty,
   EmptyDescription,
@@ -51,6 +52,8 @@ export function CompanyTable() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"alphabet" | "recent">("alphabet");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
   // Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -110,15 +113,48 @@ export function CompanyTable() {
     if (error) {
       alert("Failed to delete processing: " + error.message);
     } else {
+      setSelectedIds(prev => prev.filter(id => id !== deletingId));
       fetchCompanies();
     }
     setDeletingId(null);
+  };
+
+  const confirmBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("insurance_companies")
+      .delete()
+      .in("id", selectedIds);
+    if (error) {
+      alert("Failed to delete records: " + error.message);
+    } else {
+      setSelectedIds([]);
+      setIsDeletingBulk(false);
+      fetchCompanies();
+    }
   };
 
   const filtered = companies.filter(
     (c) =>
       c.name.toLowerCase().includes(search.toLowerCase()),
   );
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(filtered.map(f => f.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (checked: boolean, id: string) => {
+    if (checked) {
+      setSelectedIds(prev => [...prev, id]);
+    } else {
+      setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
+    }
+  };
 
   return (
     <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden">
@@ -154,16 +190,27 @@ export function CompanyTable() {
             </SelectContent>
           </Select>
         </div>
-        <button
-          onClick={() => {
-            setEditingCompany(undefined);
-            setIsFormOpen(true);
-          }}
-          className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add Company
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedIds.length > 0 && (
+            <button
+              onClick={() => setIsDeletingBulk(true)}
+              className="bg-red-500/10 text-red-500 hover:bg-red-500/20 font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors border border-red-500/20"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete ({selectedIds.length})
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setEditingCompany(undefined);
+              setIsFormOpen(true);
+            }}
+            className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Company
+          </button>
+        </div>
       </div>
 
       {/* Table Content */}
@@ -171,6 +218,13 @@ export function CompanyTable() {
         <Table className="w-full text-left text-sm text-slate-300">
           <TableHeader className="bg-slate-900 sticky top-0 border-b border-slate-800 text-xs uppercase font-medium text-slate-400 z-10 shadow-sm">
             <TableRow className="border-b-0 hover:bg-transparent">
+              <TableHead className="w-12 px-6 py-4 h-auto">
+                <Checkbox 
+                  checked={selectedIds.length > 0 && selectedIds.length === filtered.length}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                />
+              </TableHead>
               <TableHead className="px-6 py-4 h-auto">Company Name</TableHead>
               <TableHead className="px-6 py-4 h-auto">Status</TableHead>
               <TableHead className="px-6 py-4 text-right h-auto">
@@ -186,6 +240,9 @@ export function CompanyTable() {
                   className="animate-pulse border-b-0 hover:bg-transparent"
                 >
                   <TableCell className="px-6 py-5">
+                    <div className="h-4 bg-slate-800/60 rounded w-4"></div>
+                  </TableCell>
+                  <TableCell className="px-6 py-5">
                     <div className="h-4 bg-slate-800/60 rounded w-32"></div>
                   </TableCell>
                   <TableCell className="px-6 py-5">
@@ -198,7 +255,7 @@ export function CompanyTable() {
               ))
             ) : filtered.length === 0 ? (
               <TableRow className="border-b-0 hover:bg-transparent">
-                <TableCell colSpan={3} className="px-6 py-16">
+                <TableCell colSpan={4} className="px-6 py-16">
                   {search ? (
                     <Empty>
                       <EmptyMedia>
@@ -230,6 +287,13 @@ export function CompanyTable() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: index * 0.05 }}
                 >
+                  <TableCell className="px-6 py-5">
+                    <Checkbox 
+                      checked={selectedIds.includes(company.id)}
+                      onCheckedChange={(c) => handleSelectOne(!!c, company.id)}
+                      aria-label={`Select ${company.name}`}
+                    />
+                  </TableCell>
                   <TableCell className="px-6 py-5 font-medium text-slate-200">
                     {company.name}
                   </TableCell>
@@ -282,8 +346,13 @@ export function CompanyTable() {
       )}
 
       <AlertDialog
-        open={!!deletingId}
-        onOpenChange={(open) => !open && setDeletingId(null)}
+        open={!!deletingId || isDeletingBulk}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingId(null);
+            setIsDeletingBulk(false);
+          }
+        }}
       >
         <AlertDialogContent className="bg-slate-900 border-slate-800">
           <AlertDialogHeader>
@@ -291,8 +360,7 @@ export function CompanyTable() {
               Are you absolutely sure?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">
-              This action cannot be undone. This will permanently delete this
-              company and remove all its quote rules.
+              This action cannot be undone. This will permanently delete {isDeletingBulk ? "the selected companies" : "this company"} and remove all related quote rules.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -300,10 +368,10 @@ export function CompanyTable() {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={confirmDelete}
+              onClick={isDeletingBulk ? confirmBulkDelete : confirmDelete}
               className="bg-red-500 text-white hover:bg-red-600"
             >
-              Delete Company
+              Delete {isDeletingBulk ? "Selected" : "Company"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

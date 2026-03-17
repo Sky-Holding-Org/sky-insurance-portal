@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Edit2, Trash2, Plus, Filter, Search, FileText, ListFilter } from "lucide-react";
+import {
+  Edit2,
+  Trash2,
+  Plus,
+  Filter,
+  Search,
+  FileText,
+  ListFilter,
+} from "lucide-react";
 import type { QuoteRule } from "@/lib/quote-engine";
 import { formatEGP } from "@/lib/quote-engine";
 import { cn } from "@/lib/utils";
@@ -19,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -43,11 +52,15 @@ import {
 import { motion } from "framer-motion";
 export function QuoteRuleTable() {
   const [rules, setRules] = useState<QuoteRule[]>([]);
-  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>(
+    [],
+  );
   const [makes, setMakes] = useState<{ id: string; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"alphabet" | "recent">("alphabet");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
   // Modal states
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -92,13 +105,13 @@ export function QuoteRuleTable() {
         excludedMakeIds: r.excluded_make_ids,
         is_active: r.is_active, // Note: extending type locally for the table
       }));
-      
+
       if (sortBy === "alphabet") {
         normalized.sort((a, b) => a.companyName.localeCompare(b.companyName));
       } else {
         // already sorted descending by created_at in the DB query
       }
-      
+
       setRules(normalized as any);
     }
 
@@ -111,12 +124,12 @@ export function QuoteRuleTable() {
     if (companiesData) {
       setCompanies(companiesData);
     }
-    
+
     // Fetch makes to map IDs to names
     const { data: makesData } = await supabase
       .from("car_makes")
       .select("id, name");
-      
+
     if (makesData) {
       setMakes(makesData);
     }
@@ -138,9 +151,42 @@ export function QuoteRuleTable() {
     if (error) {
       alert("Delete failed: " + error.message);
     } else {
+      setSelectedIds((prev) => prev.filter((id) => id !== deletingId));
       fetchRules();
     }
     setDeletingId(null);
+  };
+
+  const confirmBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("quote_rules")
+      .delete()
+      .in("id", selectedIds);
+    if (error) {
+      alert("Delete failed: " + error.message);
+    } else {
+      setSelectedIds([]);
+      setIsDeletingBulk(false);
+      fetchRules();
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(filtered.map((f) => f.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (checked: boolean, id: string) => {
+    if (checked) {
+      setSelectedIds((prev) => [...prev, id]);
+    } else {
+      setSelectedIds((prev) => prev.filter((selectedId) => selectedId !== id));
+    }
   };
 
   const toggleActiveStatus = async (id: string, currentStatus: boolean) => {
@@ -204,27 +250,58 @@ export function QuoteRuleTable() {
               </div>
             </SelectTrigger>
             <SelectContent className="bg-slate-900 border-slate-800 text-white">
-              <SelectItem value="alphabet" className="cursor-pointer focus:bg-slate-800 focus:text-white">Alphabetical</SelectItem>
-              <SelectItem value="recent" className="cursor-pointer focus:bg-slate-800 focus:text-white">Last Added</SelectItem>
+              <SelectItem
+                value="alphabet"
+                className="cursor-pointer focus:bg-slate-800 focus:text-white"
+              >
+                Alphabetical
+              </SelectItem>
+              <SelectItem
+                value="recent"
+                className="cursor-pointer focus:bg-slate-800 focus:text-white"
+              >
+                Last Added
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <button
-          onClick={() => {
-            setEditingRule(undefined);
-            setIsFormOpen(true);
-          }}
-          className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add Rule
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedIds.length > 0 && (
+            <button
+              onClick={() => setIsDeletingBulk(true)}
+              className="bg-red-500/10 text-red-500 hover:bg-red-500/20 font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors border border-red-500/20"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete ({selectedIds.length})
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setEditingRule(undefined);
+              setIsFormOpen(true);
+            }}
+            className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Rule
+          </button>
+        </div>
       </div>
 
       <div className="relative flex-1 overflow-auto bg-slate-950/20">
         <Table className="w-full text-left text-sm text-slate-300">
           <TableHeader className="bg-slate-900 sticky top-0 border-b border-slate-800 text-xs uppercase font-medium text-slate-400 z-10 shadow-sm">
             <TableRow className="border-b-0 hover:bg-transparent">
+              <TableHead className="w-12 px-6 py-4 h-auto">
+                <Checkbox
+                  checked={
+                    selectedIds.length > 0 &&
+                    selectedIds.length === filtered.length
+                  }
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                />
+              </TableHead>
               <TableHead className="px-6 py-4 whitespace-nowrap h-auto">
                 Company & Policy
               </TableHead>
@@ -238,7 +315,7 @@ export function QuoteRuleTable() {
                 Price Range
               </TableHead>
               <TableHead className="px-6 py-4 whitespace-nowrap h-auto">
-                Age Brackets
+                Insurance Year
               </TableHead>
               <TableHead className="px-6 py-4 whitespace-nowrap h-auto">
                 Rate %
@@ -258,7 +335,7 @@ export function QuoteRuleTable() {
           <TableBody className="divide-y divide-slate-800/50">
             {isLoading ? (
               <TableRow className="hover:bg-transparent border-b-0">
-                <TableCell colSpan={9} className="p-0">
+                <TableCell colSpan={10} className="p-0">
                   <div className="flex justify-center py-8">
                     <div className="w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
                   </div>
@@ -266,7 +343,7 @@ export function QuoteRuleTable() {
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow className="border-b-0 hover:bg-transparent">
-                <TableCell colSpan={9} className="px-6 py-16">
+                <TableCell colSpan={10} className="px-6 py-16">
                   {search ? (
                     <Empty>
                       <EmptyMedia>
@@ -293,16 +370,35 @@ export function QuoteRuleTable() {
                 const estPremium = Math.round(
                   (1000000 * rule.ratePercentage) / 100,
                 );
-                
-                
+
                 // Map makes
-                const makesIncluded = rule.applicableMakeIds && rule.applicableMakeIds.length > 0 
-                  ? rule.applicableMakeIds.slice(0, 2).map((id: string) => makes.find(m => m.id === id)?.name || "Unknown").join(", ") + (rule.applicableMakeIds.length > 2 ? ` + ${rule.applicableMakeIds.length - 2} more` : "")
-                  : "All Makes";
-                  
-                const makesExcluded = rule.excludedMakeIds && rule.excludedMakeIds.length > 0
-                  ? rule.excludedMakeIds.slice(0, 2).map((id: string) => makes.find(m => m.id === id)?.name || "Unknown").join(", ") + (rule.excludedMakeIds.length > 2 ? ` + ${rule.excludedMakeIds.length - 2} more` : "")
-                  : null;
+                const makesIncluded =
+                  rule.applicableMakeIds && rule.applicableMakeIds.length > 0
+                    ? rule.applicableMakeIds
+                        .slice(0, 2)
+                        .map(
+                          (id: string) =>
+                            makes.find((m) => m.id === id)?.name || "Unknown",
+                        )
+                        .join(", ") +
+                      (rule.applicableMakeIds.length > 2
+                        ? ` + ${rule.applicableMakeIds.length - 2} more`
+                        : "")
+                    : "All Makes";
+
+                const makesExcluded =
+                  rule.excludedMakeIds && rule.excludedMakeIds.length > 0
+                    ? rule.excludedMakeIds
+                        .slice(0, 2)
+                        .map(
+                          (id: string) =>
+                            makes.find((m) => m.id === id)?.name || "Unknown",
+                        )
+                        .join(", ") +
+                      (rule.excludedMakeIds.length > 2
+                        ? ` + ${rule.excludedMakeIds.length - 2} more`
+                        : "")
+                    : null;
 
                 return (
                   <motion.tr
@@ -315,6 +411,13 @@ export function QuoteRuleTable() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: index * 0.05 }}
                   >
+                    <TableCell className="px-6 py-5">
+                      <Checkbox
+                        checked={selectedIds.includes(rule.id)}
+                        onCheckedChange={(c) => handleSelectOne(!!c, rule.id)}
+                        aria-label={`Select rule for ${rule.companyName}`}
+                      />
+                    </TableCell>
                     <TableCell className="px-6 py-5 whitespace-nowrap">
                       <div className="flex flex-col">
                         <span className="font-medium text-slate-200">
@@ -346,16 +449,14 @@ export function QuoteRuleTable() {
                     </TableCell>
 
                     <TableCell className="px-6 py-5 text-xs">
-                        <div className="flex flex-col gap-1.5">
-                          <span className="text-slate-300">
-                            {makesIncluded}
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-slate-300">{makesIncluded}</span>
+                        {makesExcluded && (
+                          <span className="text-red-400 font-medium whitespace-normal">
+                            Excludes: {makesExcluded}
                           </span>
-                          {makesExcluded && (
-                            <span className="text-red-400 font-medium whitespace-normal">
-                              Excludes: {makesExcluded}
-                            </span>
-                          )}
-                        </div>
+                        )}
+                      </div>
                     </TableCell>
 
                     <TableCell className="px-6 py-5 font-ibm-mono text-xs">
@@ -462,8 +563,13 @@ export function QuoteRuleTable() {
       )}
 
       <AlertDialog
-        open={!!deletingId}
-        onOpenChange={(open) => !open && setDeletingId(null)}
+        open={!!deletingId || isDeletingBulk}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingId(null);
+            setIsDeletingBulk(false);
+          }
+        }}
       >
         <AlertDialogContent className="bg-slate-900 border-slate-800">
           <AlertDialogHeader>
@@ -471,8 +577,11 @@ export function QuoteRuleTable() {
               Are you absolutely sure?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">
-              This action cannot be undone. This will permanently delete this
-              pricing rule.
+              This action cannot be undone. This will permanently delete{" "}
+              {isDeletingBulk
+                ? "the selected pricing rules"
+                : "this pricing rule"}
+              .
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -480,10 +589,10 @@ export function QuoteRuleTable() {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={confirmDelete}
+              onClick={isDeletingBulk ? confirmBulkDelete : confirmDelete}
               className="bg-red-500 text-white hover:bg-red-600"
             >
-              Delete Rule
+              Delete {isDeletingBulk ? "Selected" : "Rule"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

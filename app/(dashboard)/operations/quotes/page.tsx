@@ -9,7 +9,7 @@ export default function QuotesPage() {
             Quote Rules Pricing Engine
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Define base rates, age brackets, and coverage conditions.
+            Define base rates, insurance year, and coverage conditions.
           </p>
         </div>
       </div>

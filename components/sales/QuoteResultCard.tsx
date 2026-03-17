@@ -25,7 +25,6 @@ Company: ${quote.companyName}
 Policy: ${quote.policyType === "private" ? "Private" : "Gold"}
 Rate: ${quote.ratePercentage}%
 Annual Premium: ${formatEGP(quote.annualPremium)}
-Monthly Premium: ${formatEGP(quote.annualPremium / 12)}
 
 Conditions:
 ${quote.conditions.map((c) => `- ${c}`).join("\n")}`;
@@ -34,8 +33,6 @@ ${quote.conditions.map((c) => `- ${c}`).join("\n")}`;
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  const monthlyPremium = quote.annualPremium / 12;
 
   return (
     <motion.div
@@ -103,9 +100,6 @@ ${quote.conditions.map((c) => `- ${c}`).join("\n")}`;
              <span className="text-xs text-slate-500 font-medium">
                Annual Premium
              </span>
-             <span className="text-xs text-slate-500 font-medium">
-               Monthly
-             </span>
           </div>
           <div className="flex items-end justify-between">
             <div className="flex items-end gap-3 flex-wrap">
@@ -115,12 +109,6 @@ ${quote.conditions.map((c) => `- ${c}`).join("\n")}`;
               </span>
               <span className="text-sm text-teal-400 mb-1 font-medium bg-teal-500/10 px-2 py-0.5 rounded">
                 Rate: {quote.ratePercentage.toFixed(2)}%
-              </span>
-            </div>
-            <div className="text-right whitespace-nowrap mb-1">
-              <span className="font-ibm-mono text-xl font-bold text-slate-200">
-                {formatEGP(monthlyPremium).replace("EGP", "").trim()}{" "}
-                <span className="text-sm text-slate-500">EGP</span>
               </span>
             </div>
           </div>

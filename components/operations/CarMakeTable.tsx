@@ -16,6 +16,7 @@ import type { CarMake } from "@/hooks/useCarMakes";
 import { CarMakeFormSheet } from "./CarMakeFormSheet";
 import { CarCSVUploader } from "./CarCSVUploader";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Empty,
   EmptyDescription,
@@ -51,6 +52,8 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"alphabet" | "recent">("alphabet");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
   const fetchMakes = async () => {
     setIsLoading(true);
@@ -89,14 +92,48 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
       alert("Delete failed: " + error.message);
     } else {
       if (selectedId === deletingId) onSelect("");
+      setSelectedIds(prev => prev.filter(id => id !== deletingId));
       fetchMakes();
     }
     setDeletingId(null);
   };
 
+  const confirmBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("car_makes")
+      .delete()
+      .in("id", selectedIds);
+    if (error) {
+      alert("Delete failed: " + error.message);
+    } else {
+      if (selectedId && selectedIds.includes(selectedId)) onSelect("");
+      setSelectedIds([]);
+      setIsDeletingBulk(false);
+      fetchMakes();
+    }
+  };
+
   const filtered = makes.filter((m) =>
     m.name.toLowerCase().includes(search.toLowerCase()),
   );
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(filtered.map(f => f.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (checked: boolean, id: string) => {
+    if (checked) {
+      setSelectedIds(prev => [...prev, id]);
+    } else {
+      setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
+    }
+  };
 
   return (
     <div className="flex flex-col h-full bg-slate-900/50">
@@ -108,6 +145,15 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
           </span>
         </h3>
         <div className="flex items-center gap-2">
+          {selectedIds.length > 0 && (
+            <button
+              onClick={() => setIsDeletingBulk(true)}
+              className="bg-red-500/10 text-red-500 hover:bg-red-500/20 font-semibold px-2 py-1.5 rounded text-sm flex items-center gap-1.5 transition-colors border border-red-500/20"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              {selectedIds.length}
+            </button>
+          )}
           <CarCSVUploader onSuccess={fetchMakes} />
           <button
             onClick={() => {
@@ -122,6 +168,12 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
       </div>
 
       <div className="p-3 border-b border-border shrink-0 flex items-center gap-2">
+        <Checkbox 
+          checked={selectedIds.length > 0 && selectedIds.length === filtered.length}
+          onCheckedChange={handleSelectAll}
+          aria-label="Select all"
+          className="mr-1"
+        />
         <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <Input
@@ -175,13 +227,24 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
                 key={make.id}
                 onClick={() => onSelect(make.id)}
                 className={cn(
-                  "group flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all border",
+                  "group flex items-center p-3 rounded-lg cursor-pointer transition-all border",
                   isSelected
                     ? "bg-teal-500/10 border-teal-500/30 text-teal-400"
                     : "bg-transparent border-transparent text-slate-300 hover:bg-slate-800/50 hover:border-slate-700/50",
                 )}
               >
-                <div className="flex flex-col">
+                <div 
+                  className="mr-3 shrink-0" 
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Checkbox 
+                    checked={selectedIds.includes(make.id)}
+                    onCheckedChange={(c) => handleSelectOne(!!c, make.id)}
+                    aria-label={`Select ${make.name}`}
+                  />
+                </div>
+                
+                <div className="flex flex-col flex-1">
                   <span
                     className={cn(
                       "font-medium",
@@ -252,8 +315,13 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
       )}
 
       <AlertDialog
-        open={!!deletingId}
-        onOpenChange={(open) => !open && setDeletingId(null)}
+        open={!!deletingId || isDeletingBulk}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingId(null);
+            setIsDeletingBulk(false);
+          }
+        }}
       >
         <AlertDialogContent className="bg-slate-900 border-slate-800">
           <AlertDialogHeader>
@@ -261,8 +329,7 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
               Are you absolutely sure?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">
-              This action cannot be undone. This will permanently delete this
-              car make and all its associated models.
+              This action cannot be undone. This will permanently delete {isDeletingBulk ? "the selected car makes" : "this car make"} and all associated models.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -270,10 +337,10 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={confirmDelete}
+              onClick={isDeletingBulk ? confirmBulkDelete : confirmDelete}
               className="bg-red-500 text-white hover:bg-red-600"
             >
-              Delete Make
+              Delete {isDeletingBulk ? "Selected" : "Make"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
