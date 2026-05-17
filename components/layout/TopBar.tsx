@@ -57,17 +57,27 @@ export default function TopBar({ role }: { role: string }) {
         {/* Role Badge */}
         <div
           className={`px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase flex items-center gap-1.5 shadow-sm ${
-            role === "operation"
-              ? "bg-amber-500/10 border border-amber-500/20 text-amber-500"
-              : "bg-teal-500/10 border border-teal-500/20 text-teal-500"
+            role === "super_admin"
+              ? "bg-purple-500/10 border border-purple-500/20 text-purple-400"
+              : role === "operation"
+                ? "bg-amber-500/10 border border-amber-500/20 text-amber-500"
+                : "bg-teal-500/10 border border-teal-500/20 text-teal-500"
           }`}
         >
           <div
             className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-              role === "operation" ? "bg-amber-500" : "bg-teal-500"
+              role === "super_admin"
+                ? "bg-purple-400"
+                : role === "operation"
+                  ? "bg-amber-500"
+                  : "bg-teal-500"
             }`}
           />
-          {role === "operation" ? "Operations" : "Sales"}
+          {role === "super_admin"
+            ? "Super Admin"
+            : role === "operation"
+              ? "Operations"
+              : "Sales"}
         </div>
       </div>
     </header>

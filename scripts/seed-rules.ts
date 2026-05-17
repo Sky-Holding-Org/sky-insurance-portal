@@ -4,6 +4,8 @@
  * Usage: bun run scripts/seed-rules.ts
  */
 
+export {}; // Tells TypeScript this is a module with isolated scope
+
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 

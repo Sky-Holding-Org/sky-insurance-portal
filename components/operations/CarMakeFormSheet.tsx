@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logAction } from "@/lib/audit-logger";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import {
@@ -49,6 +50,10 @@ export function CarMakeFormSheet({
       chinese_tier: finalTier,
     };
 
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id || "";
+    const userEmail = userData?.user?.email || "unknown@system";
+
     if (make) {
       const { error: dbError } = await supabase
         .from("car_makes")
@@ -60,15 +65,40 @@ export function CarMakeFormSheet({
         setIsSubmitting(false);
         return;
       }
+      logAction({
+        userId,
+        userEmail,
+        action: "car_updated",
+        entityType: "car_make",
+        entityId: make.id,
+        metadata: {
+          makeName: name.trim(),
+        },
+      });
     } else {
-      const { error: dbError } = await supabase
+      const { data: newMake, error: dbError } = await supabase
         .from("car_makes")
-        .insert(payload);
+        .insert(payload)
+        .select("id")
+        .single();
 
       if (dbError) {
         setError(dbError.message);
         setIsSubmitting(false);
         return;
+      }
+      
+      if (newMake) {
+        logAction({
+          userId,
+          userEmail,
+          action: "car_created",
+          entityType: "car_make",
+          entityId: newMake.id,
+          metadata: {
+            makeName: name.trim(),
+          },
+        });
       }
     }
 

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { X, Loader2, Plus, Minus } from "lucide-react";
 import type { QuoteRule } from "@/lib/quote-engine";
+import { logAction } from "@/lib/audit-logger";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,7 @@ const FormattedNumberInput = ({
   className,
   isDecimal = false,
   required = false,
+  disableCommas = false,
 }: {
   value: number | null | undefined;
   onChange: (val: number | null) => void;
@@ -53,10 +55,11 @@ const FormattedNumberInput = ({
   className?: string;
   isDecimal?: boolean;
   required?: boolean;
+  disableCommas?: boolean;
 }) => {
   const [displayValue, setDisplayValue] = useState(
     value !== null && value !== undefined
-      ? value.toLocaleString("en-US", { maximumFractionDigits: 4 })
+      ? disableCommas ? value.toString() : value.toLocaleString("en-US", { maximumFractionDigits: 4 })
       : "",
   );
 
@@ -82,7 +85,7 @@ const FormattedNumberInput = ({
         } else {
           val = val.replace(/[^0-9]/g, "");
           if (val) {
-            val = parseInt(val, 10).toLocaleString("en-US");
+            val = disableCommas ? parseInt(val, 10).toString() : parseInt(val, 10).toLocaleString("en-US");
           }
         }
         setDisplayValue(val);
@@ -97,7 +100,7 @@ const FormattedNumberInput = ({
         const rawNum = parseFloat(displayValue.replace(/,/g, ""));
         if (!isNaN(rawNum) && rawNum >= 0) {
           setDisplayValue(
-            rawNum.toLocaleString("en-US", { maximumFractionDigits: 4 }),
+            disableCommas ? rawNum.toString() : rawNum.toLocaleString("en-US", { maximumFractionDigits: 4 }),
           );
           onChange(rawNum);
         } else {
@@ -127,7 +130,9 @@ export function QuoteRuleFormSheet({
   const makesAnchor = useComboboxAnchor();
   const excludedMakesAnchor = useComboboxAnchor();
   const { makes, isLoading: isLoadingMakes } = useCarMakes();
-  const [formData, setFormData] = useState<Partial<QuoteRule>>({
+  const currentYear = new Date().getFullYear();
+
+  const [formData, setFormData] = useState<Partial<QuoteRule & { minYear: number; maxYear: number | null; cutoffYear: number | null }>>({
     companyId: rule?.companyId || (companies.length > 0 ? companies[0].id : ""),
     policyType: rule?.policyType || "any",
     fuelType: rule?.fuelType || "any",
@@ -135,9 +140,9 @@ export function QuoteRuleFormSheet({
     chineseTier: rule?.chineseTier || "any",
     priceMin: rule?.priceMin || 10000,
     priceMax: rule?.priceMax || null,
-    ageMinYears: rule?.ageMinYears || 0,
-    ageMaxYears: rule?.ageMaxYears || null,
-    maxCarAgeYears: rule?.maxCarAgeYears || null,
+    minYear: rule?.ageMinYears !== undefined ? currentYear - rule.ageMinYears : currentYear + 1,
+    maxYear: rule?.ageMaxYears !== undefined && rule.ageMaxYears !== null ? currentYear - rule.ageMaxYears : null,
+    cutoffYear: rule?.maxCarAgeYears !== undefined && rule.maxCarAgeYears !== null ? currentYear - rule.maxCarAgeYears : null,
     electricAgencyStatus: rule?.electricAgencyStatus || null,
     ratePercentage: rule?.ratePercentage || 2.5,
     conditions: rule?.conditions || [],
@@ -173,7 +178,7 @@ export function QuoteRuleFormSheet({
     rule ? rule.priceMax !== null && rule.priceMax !== undefined : false,
   );
   const [enableAgeMin, setEnableAgeMin] = useState(
-    rule ? !!rule.ageMinYears : false,
+    rule ? rule.ageMinYears !== undefined && rule.ageMinYears !== null : false,
   );
   const [enableAgeMax, setEnableAgeMax] = useState(
     rule ? rule.ageMaxYears !== null && rule.ageMaxYears !== undefined : false,
@@ -186,7 +191,10 @@ export function QuoteRuleFormSheet({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const updateField = (field: keyof QuoteRule | "is_active", value: any) => {
+  const updateField = (
+    field: keyof QuoteRule | "is_active" | "minYear" | "maxYear" | "cutoffYear",
+    value: any,
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -220,9 +228,9 @@ export function QuoteRuleFormSheet({
       chinese_tier: "any",
       price_min: enablePriceMin ? formData.priceMin || 0 : 0,
       price_max: enablePriceMax ? formData.priceMax : null,
-      age_min_years: enableAgeMin ? formData.ageMinYears || 0 : 0,
-      age_max_years: enableAgeMax ? formData.ageMaxYears : null,
-      max_car_age_years: enableCutoff ? formData.maxCarAgeYears : null,
+      age_min_years: enableAgeMin ? (currentYear - (formData.minYear || (currentYear + 1))) : -1, // defaults to next year
+      age_max_years: enableAgeMax && formData.maxYear ? currentYear - formData.maxYear : null,
+      max_car_age_years: enableCutoff && formData.cutoffYear ? currentYear - formData.cutoffYear : null,
       electric_agency_status:
         enableFuelType && formData.fuelType === "electric"
           ? formData.electricAgencyStatus
@@ -241,10 +249,45 @@ export function QuoteRuleFormSheet({
       is_active: (formData as any).is_active,
     };
 
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id || "";
+    const userEmail = userData?.user?.email || "unknown@system";
+
+    const companyName = companies.find(c => c.id === formData.companyId)?.name || "Unknown Company";
+
     if (rule) {
       await supabase.from("quote_rules").update(payload).eq("id", rule.id);
+      logAction({
+        userId,
+        userEmail,
+        action: "rule_updated",
+        entityType: "quote_rule",
+        entityId: rule.id,
+        metadata: {
+          companyName,
+          ruleName: formData.label,
+        },
+      });
     } else {
-      await supabase.from("quote_rules").insert(payload);
+      const { data: newRule } = await supabase
+        .from("quote_rules")
+        .insert(payload)
+        .select("id")
+        .single();
+      
+      if (newRule) {
+        logAction({
+          userId,
+          userEmail,
+          action: "rule_created",
+          entityType: "quote_rule",
+          entityId: newRule.id,
+          metadata: {
+            companyName,
+            ruleName: formData.label,
+          },
+        });
+      }
     }
 
     setIsSubmitting(false);
@@ -739,7 +782,7 @@ export function QuoteRuleFormSheet({
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-medium text-slate-400">
-                      Min Vehicle Age (Years)
+                      Latest Vehicle Year Allowed
                     </label>
                     <Switch
                       checked={enableAgeMin}
@@ -749,20 +792,25 @@ export function QuoteRuleFormSheet({
                   {enableAgeMin ? (
                     <FormattedNumberInput
                       required
-                      value={formData.ageMinYears}
-                      onChange={(val) => updateField("ageMinYears", val || 0)}
+                      disableCommas
+                      value={formData.minYear}
+                      onChange={(val) => {
+                        if (val && val >= 1900 && val <= 2100) updateField("minYear", val);
+                        else updateField("minYear", val);
+                      }}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg h-[38px] text-sm text-white font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                      placeholder={`e.g. ${currentYear + 1}`}
                     />
                   ) : (
                     <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">
-                      0 Years (New)
+                      Any (Current default: {currentYear + 1})
                     </div>
                   )}
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-medium text-slate-400">
-                      Max Vehicle Age (Applies to Rule)
+                      Oldest Vehicle Year Allowed
                     </label>
                     <Switch
                       checked={enableAgeMax}
@@ -771,10 +819,14 @@ export function QuoteRuleFormSheet({
                   </div>
                   {enableAgeMax ? (
                     <FormattedNumberInput
-                      value={formData.ageMaxYears}
-                      onChange={(val) => updateField("ageMaxYears", val)}
+                      disableCommas
+                      value={formData.maxYear}
+                      onChange={(val) => {
+                        if (val && val >= 1900 && val <= 2100) updateField("maxYear", val);
+                        else updateField("maxYear", val);
+                      }}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg h-[38px] text-sm text-white font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
-                      placeholder="Unlimited"
+                      placeholder="e.g. 2015"
                     />
                   ) : (
                     <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">
@@ -786,9 +838,9 @@ export function QuoteRuleFormSheet({
                   <div className="flex items-center justify-between">
                     <label
                       className="text-xs font-medium text-red-400"
-                      title="This completely disqualifies any car older than this age from ANY rule within this company."
+                      title="This completely disqualifies any car older than this year from ANY rule within this company."
                     >
-                      Hard Company Cutoff Age{" "}
+                      Hard Company Cutoff Year{" "}
                       <span className="text-slate-500 font-normal">
                         (Disqualifies old cars globally for this company)
                       </span>
@@ -800,10 +852,14 @@ export function QuoteRuleFormSheet({
                   </div>
                   {enableCutoff ? (
                     <FormattedNumberInput
-                      value={formData.maxCarAgeYears}
-                      onChange={(val) => updateField("maxCarAgeYears", val)}
+                      disableCommas
+                      value={formData.cutoffYear}
+                      onChange={(val) => {
+                        if (val && val >= 1900 && val <= 2100) updateField("cutoffYear", val);
+                        else updateField("cutoffYear", val);
+                      }}
                       className="w-full bg-slate-950 border border-red-500/30 rounded-lg h-[38px] text-sm text-white font-ibm-mono focus-visible:ring-1 focus-visible:ring-red-500/50 focus-visible:border-red-500/50"
-                      placeholder="None"
+                      placeholder="e.g. 2010"
                     />
                   ) : (
                     <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">

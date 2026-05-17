@@ -13,16 +13,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CarMake } from "@/hooks/useCarMakes";
+import { logAction } from "@/lib/audit-logger";
 import { CarMakeFormSheet } from "./CarMakeFormSheet";
 import { CarCSVUploader } from "./CarCSVUploader";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
+
 import {
   Select,
   SelectContent,
@@ -91,8 +87,21 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
     if (error) {
       alert("Delete failed: " + error.message);
     } else {
+      const make = makes.find(m => m.id === deletingId);
+      const { data: userData } = await supabase.auth.getUser();
+      logAction({
+        userId: userData?.user?.id || "",
+        userEmail: userData?.user?.email || "unknown@system",
+        action: "car_deleted",
+        entityType: "car_make",
+        entityId: deletingId,
+        metadata: {
+          makeName: make?.name,
+        },
+      });
+
       if (selectedId === deletingId) onSelect("");
-      setSelectedIds(prev => prev.filter(id => id !== deletingId));
+      setSelectedIds((prev) => prev.filter((id) => id !== deletingId));
       fetchMakes();
     }
     setDeletingId(null);
@@ -108,6 +117,22 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
     if (error) {
       alert("Delete failed: " + error.message);
     } else {
+      const { data: userData } = await supabase.auth.getUser();
+      for (const id of selectedIds) {
+        const make = makes.find(m => m.id === id);
+        logAction({
+          userId: userData?.user?.id || "",
+          userEmail: userData?.user?.email || "unknown@system",
+          action: "car_deleted",
+          entityType: "car_make",
+          entityId: id,
+          metadata: {
+            makeName: make?.name,
+            bulk: true,
+          },
+        });
+      }
+
       if (selectedId && selectedIds.includes(selectedId)) onSelect("");
       setSelectedIds([]);
       setIsDeletingBulk(false);
@@ -121,7 +146,7 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedIds(filtered.map(f => f.id));
+      setSelectedIds(filtered.map((f) => f.id));
     } else {
       setSelectedIds([]);
     }
@@ -129,9 +154,9 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
 
   const handleSelectOne = (checked: boolean, id: string) => {
     if (checked) {
-      setSelectedIds(prev => [...prev, id]);
+      setSelectedIds((prev) => [...prev, id]);
     } else {
-      setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
+      setSelectedIds((prev) => prev.filter((selectedId) => selectedId !== id));
     }
   };
 
@@ -168,8 +193,10 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
       </div>
 
       <div className="p-3 border-b border-border shrink-0 flex items-center gap-2">
-        <Checkbox 
-          checked={selectedIds.length > 0 && selectedIds.length === filtered.length}
+        <Checkbox
+          checked={
+            selectedIds.length > 0 && selectedIds.length === filtered.length
+          }
           onCheckedChange={handleSelectAll}
           aria-label="Select all"
           className="mr-1"
@@ -192,21 +219,21 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
                 <SelectValue placeholder="Sort by" />
               </div>
             </SelectTrigger>
-          <SelectContent className="bg-slate-900 border-slate-800 text-white">
-            <SelectItem
-              value="alphabet"
-              className="cursor-pointer focus:bg-slate-800 focus:text-white"
-            >
-              Alphabetical
-            </SelectItem>
-            <SelectItem
-              value="recent"
-              className="cursor-pointer focus:bg-slate-800 focus:text-white"
-            >
-              Last Added
-            </SelectItem>
-          </SelectContent>
-        </Select>
+            <SelectContent className="bg-slate-900 border-slate-800 text-white">
+              <SelectItem
+                value="alphabet"
+                className="cursor-pointer focus:bg-slate-800 focus:text-white"
+              >
+                Alphabetical
+              </SelectItem>
+              <SelectItem
+                value="recent"
+                className="cursor-pointer focus:bg-slate-800 focus:text-white"
+              >
+                Last Added
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -233,17 +260,17 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
                     : "bg-transparent border-transparent text-slate-300 hover:bg-slate-800/50 hover:border-slate-700/50",
                 )}
               >
-                <div 
-                  className="mr-3 shrink-0" 
+                <div
+                  className="mr-3 shrink-0"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Checkbox 
+                  <Checkbox
                     checked={selectedIds.includes(make.id)}
                     onCheckedChange={(c) => handleSelectOne(!!c, make.id)}
                     aria-label={`Select ${make.name}`}
                   />
                 </div>
-                
+
                 <div className="flex flex-col flex-1">
                   <span
                     className={cn(
@@ -329,7 +356,9 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
               Are you absolutely sure?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">
-              This action cannot be undone. This will permanently delete {isDeletingBulk ? "the selected car makes" : "this car make"} and all associated models.
+              This action cannot be undone. This will permanently delete{" "}
+              {isDeletingBulk ? "the selected car makes" : "this car make"} and
+              all associated models.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

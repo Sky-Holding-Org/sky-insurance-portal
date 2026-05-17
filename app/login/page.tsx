@@ -5,13 +5,12 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { AlertCircle, Loader2, Eye, EyeOff, Codepen } from "lucide-react";
+import { logLogin } from "@/lib/audit-logger";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedRole, setSelectedRole] = useState("sales");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,52 +30,26 @@ export default function LoginPage() {
     });
 
     if (error) {
-      // Check if it's invalid credentials
-      if (error.message.includes("Invalid login credentials")) {
-        // As a fallback for the demo, try to create the user if it doesn't exist yet
-        const { data: signUpData, error: signUpError } =
-          await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: { role: selectedRole },
-            },
-          });
-
-        if (signUpError) {
-          setError(error.message);
-          setLoading(false);
-          return;
-        }
-
-        // If sign up worked and auto-logged in
-        if (signUpData.session) {
-          router.push(
-            selectedRole === "operation" ? "/operations/cars" : "/sales",
-          );
-          router.refresh();
-        } else {
-          setError("Invalid credentials. Please try again.");
-        }
-      } else {
-        setError(error.message);
-      }
-    } else {
-      const userRole = data.user?.user_metadata?.role || "sales";
-
-      // Enforce selected role matches actual DB role
-      if (userRole !== selectedRole) {
-        await supabase.auth.signOut();
-        setError(
-          `This user does not have '${selectedRole}' privileges. Please select the correct role.`,
-        );
-        setLoading(false);
-        return;
-      }
-
-      router.push(userRole === "operation" ? "/operations/cars" : "/sales");
-      router.refresh();
+      setError("Invalid email or password. Please try again.");
+      setLoading(false);
+      return;
     }
+
+    const userRole = data.user?.user_metadata?.role || "sales";
+    const userId = data.user?.id || "";
+    const userEmail = data.user?.email || "";
+
+    // Fire-and-forget audit log
+    logLogin(userId, userEmail);
+
+    if (userRole === "super_admin") {
+      router.push("/admin/audit-logs");
+    } else if (userRole === "operation") {
+      router.push("/operations/cars");
+    } else {
+      router.push("/sales");
+    }
+    router.refresh();
 
     setLoading(false);
   };
@@ -145,36 +118,6 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
-            </div>
-
-            <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-              <label className="text-sm font-medium text-slate-300 ">
-                Sign in as
-              </label>
-              <RadioGroup
-                value={selectedRole}
-                onValueChange={setSelectedRole}
-                className="flex flex-row pt-2"
-              >
-                <div className="flex items-center space-x-3">
-                  <RadioGroupItem value="sales" id="role-sales" />
-                  <label
-                    htmlFor="role-sales"
-                    className="text-sm text-slate-300 cursor-pointer"
-                  >
-                    Sales Agent
-                  </label>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <RadioGroupItem value="operation" id="role-operation" />
-                  <label
-                    htmlFor="role-operation"
-                    className="text-sm text-slate-300 cursor-pointer"
-                  >
-                    Operations Manager
-                  </label>
-                </div>
-              </RadioGroup>
             </div>
 
             <Button

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 import type { CarModel } from "@/hooks/useCarModels";
+import { logAction } from "@/lib/audit-logger";
 import { Input } from "@/components/ui/input";
 import {
   Sheet,
@@ -44,6 +45,10 @@ export function CarModelFormModal({
       name: name.trim(),
     };
 
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id || "";
+    const userEmail = userData?.user?.email || "unknown@system";
+
     if (model) {
       const { error: dbError } = await supabase
         .from("car_models")
@@ -55,15 +60,41 @@ export function CarModelFormModal({
         setIsSubmitting(false);
         return;
       }
+      
+      logAction({
+        userId,
+        userEmail,
+        action: "car_updated",
+        entityType: "car_model",
+        entityId: model.id,
+        metadata: {
+          modelName: name.trim(),
+        },
+      });
     } else {
-      const { error: dbError } = await supabase
+      const { data: newModel, error: dbError } = await supabase
         .from("car_models")
-        .insert(payload);
+        .insert(payload)
+        .select("id")
+        .single();
 
       if (dbError) {
         setError(dbError.message);
         setIsSubmitting(false);
         return;
+      }
+      
+      if (newModel) {
+        logAction({
+          userId,
+          userEmail,
+          action: "car_created",
+          entityType: "car_model",
+          entityId: newModel.id,
+          metadata: {
+            modelName: name.trim(),
+          },
+        });
       }
     }
 

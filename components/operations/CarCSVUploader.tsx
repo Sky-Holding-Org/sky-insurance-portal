@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Upload, Loader2, FileUp, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { logAction } from "@/lib/audit-logger";
 import {
   Dialog,
   DialogContent,
@@ -214,6 +215,20 @@ export function CarCSVUploader({ onSuccess }: UploaderProps) {
           successCount++;
         }
       }
+
+      const { data: userData } = await supabase.auth.getUser();
+      logAction({
+        userId: userData?.user?.id || "",
+        userEmail: userData?.user?.email || "unknown@system",
+        action: "car_created",
+        entityType: "car_make",
+        entityId: "bulk_import",
+        metadata: {
+          imported_makes: makesMap.size,
+          imported_models: successCount,
+          bulk: true,
+        },
+      });
 
       toast.success(`Successfully imported ${successCount} models across ${makesMap.size} makes`);
       setIsOpen(false);

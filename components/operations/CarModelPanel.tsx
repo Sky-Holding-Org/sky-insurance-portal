@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Edit2, Trash2, Plus, Search, CarFront, Car } from "lucide-react";
 import type { CarModel } from "@/hooks/useCarModels";
+import { logAction } from "@/lib/audit-logger";
 import { CarModelFormModal } from "./CarModelFormModal";
 import {
   AlertDialog,
@@ -69,6 +70,19 @@ export function CarModelPanel({ makeId }: CarModelPanelProps) {
     if (error) {
       alert("Delete failed: " + error.message);
     } else {
+      const model = models.find(m => m.id === deletingId);
+      const { data: userData } = await supabase.auth.getUser();
+      logAction({
+        userId: userData?.user?.id || "",
+        userEmail: userData?.user?.email || "unknown@system",
+        action: "car_deleted",
+        entityType: "car_model",
+        entityId: deletingId,
+        metadata: {
+          modelName: model?.name,
+        },
+      });
+
       if (makeId) fetchModels(makeId);
     }
     setDeletingId(null);

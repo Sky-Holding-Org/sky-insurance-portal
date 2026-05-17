@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { QuoteRule } from "@/lib/quote-engine";
 import { formatEGP } from "@/lib/quote-engine";
+import { logAction } from "@/lib/audit-logger";
 import { cn } from "@/lib/utils";
 import { QuoteRuleFormSheet } from "./QuoteRuleFormSheet";
 import {
@@ -151,6 +152,19 @@ export function QuoteRuleTable() {
     if (error) {
       alert("Delete failed: " + error.message);
     } else {
+      const rule = rules.find((r) => r.id === deletingId);
+      const { data: userData } = await supabase.auth.getUser();
+      logAction({
+        userId: userData?.user?.id || "",
+        userEmail: userData?.user?.email || "unknown@system",
+        action: "rule_deleted",
+        entityType: "quote_rule",
+        entityId: deletingId,
+        metadata: {
+          companyName: rule?.companyName,
+          label: rule?.label,
+        },
+      });
       setSelectedIds((prev) => prev.filter((id) => id !== deletingId));
       fetchRules();
     }
@@ -167,6 +181,25 @@ export function QuoteRuleTable() {
     if (error) {
       alert("Delete failed: " + error.message);
     } else {
+      const { data: userData } = await supabase.auth.getUser();
+      
+      // Log for each deleted item
+      for (const id of selectedIds) {
+        const rule = rules.find((r) => r.id === id);
+        logAction({
+          userId: userData?.user?.id || "",
+          userEmail: userData?.user?.email || "unknown@system",
+          action: "rule_deleted",
+          entityType: "quote_rule",
+          entityId: id,
+          metadata: {
+            companyName: rule?.companyName,
+            label: rule?.label,
+            bulk: true,
+          },
+        });
+      }
+
       setSelectedIds([]);
       setIsDeletingBulk(false);
       fetchRules();
@@ -213,6 +246,21 @@ export function QuoteRuleTable() {
             r.id === id ? { ...r, is_active: currentStatus } : r,
           ) as any,
       );
+    } else {
+      const rule = rules.find((r) => r.id === id);
+      const { data: userData } = await supabase.auth.getUser();
+      logAction({
+        userId: userData?.user?.id || "",
+        userEmail: userData?.user?.email || "unknown@system",
+        action: "rule_updated",
+        entityType: "quote_rule",
+        entityId: id,
+        metadata: {
+          companyName: rule?.companyName,
+          label: rule?.label,
+          status_changed_to: !currentStatus ? "active" : "inactive"
+        },
+      });
     }
   };
 
@@ -403,15 +451,19 @@ export function QuoteRuleTable() {
                 return (
                   <motion.tr
                     key={rule.id}
+                    onClick={() => {
+                      setEditingRule(rule);
+                      setIsFormOpen(true);
+                    }}
                     className={cn(
-                      "hover:bg-slate-800/30 transition-all duration-200 group border-b-0 cursor-default",
+                      "hover:bg-slate-800/30 transition-all duration-200 group border-b-0 cursor-pointer",
                       !rule.is_active && "opacity-50 grayscale",
                     )}
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: index * 0.05 }}
                   >
-                    <TableCell className="px-6 py-5">
+                    <TableCell className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={selectedIds.includes(rule.id)}
                         onCheckedChange={(c) => handleSelectOne(!!c, rule.id)}
@@ -475,15 +527,24 @@ export function QuoteRuleTable() {
                     </TableCell>
 
                     <TableCell className="px-6 py-5 text-xs text-slate-400">
-                      <div>
-                        Age: {rule.ageMinYears} - {rule.ageMaxYears || "Max"}{" "}
-                        yrs
-                      </div>
-                      {rule.maxCarAgeYears && (
-                        <div className="text-red-400/80 mt-0.5">
-                          Cutoff: &gt; {rule.maxCarAgeYears} yrs
-                        </div>
-                      )}
+                      {(() => {
+                        const currentYear = new Date().getFullYear();
+                        const maxYear = currentYear - rule.ageMinYears;
+                        const minYear = rule.ageMaxYears != null ? currentYear - rule.ageMaxYears : null;
+                        const cutoffYear = rule.maxCarAgeYears != null ? currentYear - rule.maxCarAgeYears : null;
+                        return (
+                          <>
+                            <div>
+                              Min: {minYear ?? "Any"} — Max: {maxYear}
+                            </div>
+                            {cutoffYear != null && (
+                              <div className="text-red-400/80 mt-0.5">
+                                Cutoff: {cutoffYear} and below not included
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </TableCell>
 
                     <TableCell className="px-6 py-5 text-right">
@@ -496,7 +557,7 @@ export function QuoteRuleTable() {
                       {formatEGP(estPremium)}
                     </TableCell>
 
-                    <TableCell className="px-6 py-5 whitespace-nowrap">
+                    <TableCell className="px-6 py-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-2">
                         <span
                           className={cn(
@@ -518,7 +579,7 @@ export function QuoteRuleTable() {
                       </div>
                     </TableCell>
 
-                    <TableCell className="px-6 py-5 text-right">
+                    <TableCell className="px-6 py-5 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => {

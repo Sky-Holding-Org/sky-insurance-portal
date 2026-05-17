@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logAction } from "@/lib/audit-logger";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,13 +43,41 @@ export function CompanyFormSheet({
       is_active: isActive,
     };
 
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id || "";
+    const userEmail = userData?.user?.email || "unknown@system";
+
     if (company) {
       await supabase
         .from("insurance_companies")
         .update(payload)
         .eq("id", company.id);
+
+      logAction({
+        userId,
+        userEmail,
+        action: "company_updated",
+        entityType: "insurance_company",
+        entityId: company.id,
+        metadata: {
+          companyName: name,
+        },
+      });
     } else {
-      await supabase.from("insurance_companies").insert(payload);
+      const { data: newCompany } = await supabase.from("insurance_companies").insert(payload).select("id").single();
+      
+      if (newCompany) {
+        logAction({
+          userId,
+          userEmail,
+          action: "company_created",
+          entityType: "insurance_company",
+          entityId: newCompany.id,
+          metadata: {
+            companyName: name,
+          },
+        });
+      }
     }
 
     setIsSubmitting(false);

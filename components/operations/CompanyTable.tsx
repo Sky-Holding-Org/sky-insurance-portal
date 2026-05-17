@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Edit2, Trash2, Plus, Search, Building2, ListFilter } from "lucide-react";
+import { logAction } from "@/lib/audit-logger";
 import { CompanyFormSheet } from "./CompanyFormSheet";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -100,6 +101,20 @@ export function CompanyTable() {
         prev.map((c) => (c.id === id ? { ...c, is_active: current } : c)),
       );
       alert("Failed to update status: " + error.message);
+    } else {
+      const company = companies.find(c => c.id === id);
+      const { data: userData } = await supabase.auth.getUser();
+      logAction({
+        userId: userData?.user?.id || "",
+        userEmail: userData?.user?.email || "unknown@system",
+        action: "company_updated",
+        entityType: "insurance_company",
+        entityId: id,
+        metadata: {
+          companyName: company?.name,
+          status_changed_to: !current ? "active" : "inactive"
+        },
+      });
     }
   };
 
@@ -113,6 +128,18 @@ export function CompanyTable() {
     if (error) {
       alert("Failed to delete processing: " + error.message);
     } else {
+      const company = companies.find(c => c.id === deletingId);
+      const { data: userData } = await supabase.auth.getUser();
+      logAction({
+        userId: userData?.user?.id || "",
+        userEmail: userData?.user?.email || "unknown@system",
+        action: "company_deleted",
+        entityType: "insurance_company",
+        entityId: deletingId,
+        metadata: {
+          companyName: company?.name,
+        },
+      });
       setSelectedIds(prev => prev.filter(id => id !== deletingId));
       fetchCompanies();
     }
@@ -129,6 +156,23 @@ export function CompanyTable() {
     if (error) {
       alert("Failed to delete records: " + error.message);
     } else {
+      const { data: userData } = await supabase.auth.getUser();
+      
+      for (const id of selectedIds) {
+        const company = companies.find(c => c.id === id);
+        logAction({
+          userId: userData?.user?.id || "",
+          userEmail: userData?.user?.email || "unknown@system",
+          action: "company_deleted",
+          entityType: "insurance_company",
+          entityId: id,
+          metadata: {
+            companyName: company?.name,
+            bulk: true,
+          },
+        });
+      }
+
       setSelectedIds([]);
       setIsDeletingBulk(false);
       fetchCompanies();

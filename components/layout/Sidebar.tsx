@@ -180,7 +180,11 @@ export default function Sidebar({
                 {userEmail.split("@")[0]}
               </p>
               <p className="text-xs text-slate-500 truncate capitalize">
-                {role === "operation" ? "Operations Manager" : "Sales Agent"}
+                {role === "operation"
+                  ? "Operations Manager"
+                  : role === "super_admin"
+                    ? "Super Admin"
+                    : "Sales Agent"}
               </p>
             </div>
           </div>

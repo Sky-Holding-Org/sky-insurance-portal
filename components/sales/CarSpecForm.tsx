@@ -140,12 +140,10 @@ export function CarSpecForm() {
     const clean = val.replace(/\D/g, "");
     setLocalYear(clean);
     const num = parseInt(clean, 10);
-    if (
-      !isNaN(num) &&
-      num >= 1900 &&
-      num <= new Date().getFullYear() + 1 &&
-      num >= 0
-    ) {
+    const currentYear = new Date().getFullYear();
+    const minYear = currentYear - 9;
+    const maxYear = currentYear + 1;
+    if (!isNaN(num) && num >= minYear && num <= maxYear) {
       clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         store.setField("manufacturingYear", num);
@@ -156,7 +154,7 @@ export function CarSpecForm() {
   const handleReset = () => {
     store.reset();
     setLocalValue("");
-    setLocalYear(new Date().getFullYear().toString());
+    setLocalYear((new Date().getFullYear() + 1).toString());
   };
 
   return (
