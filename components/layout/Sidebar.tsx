@@ -60,17 +60,17 @@ export default function Sidebar({
   const opsItems = [
     {
       title: "Companies",
-      href: "/operations/companies",
+      href: role === "super_admin" ? "/admin/companies" : "/operations/companies",
       icon: <Users className="w-4 h-4" />,
     },
     {
       title: "Cars Catalog",
-      href: "/operations/cars",
+      href: role === "super_admin" ? "/admin/cars" : "/operations/cars",
       icon: <CarFront className="w-4 h-4" />,
     },
     {
       title: "Quote Rules",
-      href: "/operations/quotes",
+      href: role === "super_admin" ? "/admin/quotes" : "/operations/quotes",
       icon: <ListFilter className="w-4 h-4" />,
     },
   ];
