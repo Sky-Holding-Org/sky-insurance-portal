@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { logLogout } from "@/lib/audit-logger";
 
 export default function Sidebar({
   role,
@@ -32,6 +33,12 @@ export default function Sidebar({
 
   const handleLogout = async () => {
     const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      await logLogout(user.id, user.email || userEmail);
+    }
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();
@@ -112,8 +119,8 @@ export default function Sidebar({
           );
         })}
 
-        {/* Operations collapsible (Only for Operation role) */}
-        {role === "operation" && (
+        {/* Operations collapsible (Only for Operation & Super Admin role) */}
+        {["operation", "super_admin"].includes(role) && (
           <div className="mt-2">
             <button
               onClick={() => setIsOpsOpen((o) => !o)}
@@ -165,6 +172,48 @@ export default function Sidebar({
               </div>
             )}
           </div>
+        )}
+
+        {/* Super Admin Links */}
+        {role === "super_admin" && (
+          <div className="mt-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 px-2 pt-2 border-t border-slate-800">
+            Admin
+          </div>
+        )}
+        {role === "super_admin" && (
+          <>
+            <Link
+              href="/admin/users"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all relative mt-1",
+                pathname === "/admin/users"
+                  ? "bg-teal-500/10 text-teal-400"
+                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200",
+              )}
+            >
+              {pathname === "/admin/users" && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-teal-500 rounded-r-md" />
+              )}
+              <Users className="w-4 h-4" />
+              User Management
+            </Link>
+            
+            <Link
+              href="/admin/audit-logs"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all relative mt-1",
+                pathname === "/admin/audit-logs"
+                  ? "bg-teal-500/10 text-teal-400"
+                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200",
+              )}
+            >
+              {pathname === "/admin/audit-logs" && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-teal-500 rounded-r-md" />
+              )}
+              <FileText className="w-4 h-4" />
+              Audit Logs
+            </Link>
+          </>
         )}
       </div>
 
