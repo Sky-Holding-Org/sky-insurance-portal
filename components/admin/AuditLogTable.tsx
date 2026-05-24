@@ -144,19 +144,28 @@ function MetadataCell({ metadata }: { metadata: Record<string, any> | null }) {
   );
 }
 
-export default function AuditLogTable({ logs: initialLogs }: { logs: AuditLog[] }) {
+export default function AuditLogTable({
+  logs: initialLogs,
+}: {
+  logs: AuditLog[];
+}) {
   const [logs, setLogs] = useState<AuditLog[]>(initialLogs);
   const [search, setSearch] = useState("");
   const [filterAction, setFilterAction] = useState("all");
   const [isClearing, setIsClearing] = useState(false);
 
   const handleClearLogs = async () => {
-    if (!confirm("Are you sure you want to clear all audit logs? This action cannot be undone.")) return;
-    
+    if (
+      !confirm(
+        "Are you sure you want to clear all audit logs? This action cannot be undone.",
+      )
+    )
+      return;
+
     setIsClearing(true);
     const supabase = createClient();
     const { error } = await supabase.rpc("clear_all_audit_logs");
-    
+
     if (error) {
       alert("Failed to clear logs: " + error.message);
     } else {
@@ -277,13 +286,19 @@ export default function AuditLogTable({ logs: initialLogs }: { logs: AuditLog[] 
           ))}
         </div>
         <span className="text-xs text-slate-500 ml-auto flex items-center gap-3">
-          <span>{filtered.length} of {logs.length} events</span>
+          <span>
+            {filtered.length} of {logs.length} events
+          </span>
           <button
             onClick={handleClearLogs}
             disabled={isClearing || logs.length === 0}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isClearing ? <Activity className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+            {isClearing ? (
+              <Activity className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="w-3.5 h-3.5" />
+            )}
             Clear Logs
           </button>
         </span>
@@ -350,10 +365,10 @@ export default function AuditLogTable({ logs: initialLogs }: { logs: AuditLog[] 
                       </td>
 
                       {/* Action Badge */}
-                      <td className="px-5 py-3.5">
+                      <td className="px-1">
                         <span
                           className={cn(
-                            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border",
+                            "inline-flex items-center gap-1.5  py-2 px-2.5 rounded-full text-xs font-medium border",
                             cfg.bg,
                             cfg.color,
                           )}
