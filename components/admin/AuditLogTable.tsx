@@ -43,8 +43,8 @@ const ACTION_CONFIG: Record<
   logout: {
     label: "Logged Out",
     icon: <LogOut className="w-3.5 h-3.5" />,
-    color: "text-slate-400",
-    bg: "bg-slate-800 border-slate-700",
+    color: "text-muted-foreground",
+    bg: "bg-muted border-border",
   },
   rule_created: {
     label: "Rule Created",
@@ -115,28 +115,28 @@ function getActionConfig(action: string) {
     ACTION_CONFIG[action] ?? {
       label: action.replace(/_/g, " "),
       icon: <Activity className="w-3.5 h-3.5" />,
-      color: "text-slate-400",
-      bg: "bg-slate-800 border-slate-700",
+      color: "text-muted-foreground",
+      bg: "bg-muted border-border",
     }
   );
 }
 
 function MetadataCell({ metadata }: { metadata: Record<string, any> | null }) {
   if (!metadata || Object.keys(metadata).length === 0) {
-    return <span className="text-slate-600 italic">—</span>;
+    return <span className="text-muted-foreground italic">—</span>;
   }
 
   const entries = Object.entries(metadata).slice(0, 3);
   return (
     <div className="flex flex-col gap-0.5">
       {entries.map(([key, val]) => (
-        <span key={key} className="text-slate-500 text-xs">
-          <span className="text-slate-400">{key}:</span>{" "}
+        <span key={key} className="text-muted-foreground text-xs">
+          <span className="text-muted-foreground">{key}:</span>{" "}
           {typeof val === "object" ? JSON.stringify(val) : String(val)}
         </span>
       ))}
       {Object.keys(metadata).length > 3 && (
-        <span className="text-slate-600 text-xs">
+        <span className="text-muted-foreground text-xs">
           +{Object.keys(metadata).length - 3} more
         </span>
       )}
@@ -237,7 +237,7 @@ export default function AuditLogTable({
         ].map((s) => (
           <div
             key={s.label}
-            className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4"
+            className="bg-card border border-border rounded-xl p-4 flex items-center gap-4"
           >
             <div
               className={cn(
@@ -249,8 +249,8 @@ export default function AuditLogTable({
               {s.icon}
             </div>
             <div>
-              <p className="text-xs text-slate-500">{s.label}</p>
-              <p className="text-xl font-bold font-ibm-mono text-white">
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+              <p className="text-xl font-bold font-ibm-mono text-foreground">
                 {s.value.toLocaleString()}
               </p>
             </div>
@@ -261,15 +261,15 @@ export default function AuditLogTable({
       {/* Filters */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-xs">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search by user or action..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 h-9"
+            className="pl-9 bg-background border-border text-foreground placeholder:text-muted-foreground h-9"
           />
         </div>
-        <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg p-1">
+        <div className="flex items-center gap-1.5 bg-background border border-border rounded-lg p-1">
           {FILTER_ACTIONS.map((f) => (
             <button
               key={f.value}
@@ -277,15 +277,15 @@ export default function AuditLogTable({
               className={cn(
                 "text-xs px-3 py-1.5 rounded-md font-medium transition-colors",
                 filterAction === f.value
-                  ? "bg-purple-500 text-white"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800",
+                  ? "bg-purple-500 text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted",
               )}
             >
               {f.label}
             </button>
           ))}
         </div>
-        <span className="text-xs text-slate-500 ml-auto flex items-center gap-3">
+        <span className="text-xs text-muted-foreground ml-auto flex items-center gap-3">
           <span>
             {filtered.length} of {logs.length} events
           </span>
@@ -305,23 +305,23 @@ export default function AuditLogTable({
       </div>
 
       {/* Table */}
-      <div className="flex-1 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="flex-1 bg-card border border-border rounded-xl overflow-hidden">
         <div className="overflow-auto max-h-[calc(100vh-380px)]">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-slate-900 border-b border-slate-800 z-10">
-              <tr className="text-xs uppercase font-semibold text-slate-500 tracking-wider">
+            <thead className="sticky top-0 bg-card border-b border-border z-10">
+              <tr className="text-xs uppercase font-semibold text-muted-foreground tracking-wider">
                 <th className="text-left px-5 py-3 w-48">Timestamp</th>
                 <th className="text-left px-5 py-3 w-52">User</th>
                 <th className="text-left px-5 py-3 w-44">Action</th>
                 <th className="text-left px-5 py-3">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50">
+            <tbody className="divide-y divide-border">
               {filtered.length === 0 ? (
                 <tr>
                   <td
                     colSpan={4}
-                    className="text-center py-16 text-slate-500 text-sm"
+                    className="text-center py-16 text-muted-foreground text-sm"
                   >
                     <RefreshCcw className="w-5 h-5 mx-auto mb-2 opacity-40" />
                     No audit events found
@@ -333,18 +333,18 @@ export default function AuditLogTable({
                   return (
                     <tr
                       key={log.id}
-                      className="hover:bg-slate-800/30 transition-colors"
+                      className="hover:bg-muted/30 transition-colors"
                     >
                       {/* Timestamp */}
                       <td className="px-5 py-3.5 whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="font-ibm-mono text-xs text-slate-300">
+                          <span className="font-ibm-mono text-xs text-foreground">
                             {format(
                               new Date(log.created_at),
                               "dd MMM yyyy, HH:mm:ss",
                             )}
                           </span>
-                          <span className="text-[11px] text-slate-600">
+                          <span className="text-[11px] text-muted-foreground">
                             {formatDistanceToNow(new Date(log.created_at), {
                               addSuffix: true,
                             })}
@@ -355,10 +355,10 @@ export default function AuditLogTable({
                       {/* User */}
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-semibold text-xs shrink-0 uppercase">
+                          <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-foreground font-semibold text-xs shrink-0 uppercase">
                             {log.user_email.charAt(0)}
                           </div>
-                          <span className="text-slate-300 text-xs truncate max-w-[160px]">
+                          <span className="text-foreground text-xs truncate max-w-[160px]">
                             {log.user_email}
                           </span>
                         </div>

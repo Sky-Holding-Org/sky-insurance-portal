@@ -32,6 +32,7 @@ export interface QuoteRule {
   ratePercentage: number;
   conditions: string[];
   conditionsEn: string[];
+  conditionLinks?: string[];
   label?: string;
   applicableMakeIds?: string[]; // newly added restriction for GIG
   excludedMakeIds?: string[]; // newly added exclusion list
@@ -48,6 +49,7 @@ export interface QuoteResult {
   annualPremium: number;
   conditions: string[];
   conditionsEn: string[];
+  conditionLinks?: string[];
   isEligible: true;
 }
 
@@ -170,6 +172,7 @@ function evaluateRule(
     annualPremium,
     conditions: rule.conditions,
     conditionsEn: rule.conditionsEn,
+    conditionLinks: rule.conditionLinks || [],
     isEligible: true,
   };
 }

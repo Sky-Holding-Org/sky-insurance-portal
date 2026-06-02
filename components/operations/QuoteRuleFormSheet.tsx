@@ -146,6 +146,7 @@ export function QuoteRuleFormSheet({
     electricAgencyStatus: rule?.electricAgencyStatus || null,
     ratePercentage: rule?.ratePercentage || 2.5,
     conditions: rule?.conditions || [],
+    conditionLinks: rule?.conditionLinks || [],
     applicableMakeIds: rule?.applicableMakeIds || [],
     excludedMakeIds: rule?.excludedMakeIds || [],
     label: rule?.label || "",
@@ -214,6 +215,22 @@ export function QuoteRuleFormSheet({
     updateField("conditions", newConditions);
   };
 
+  const handleConditionLinkChange = (idx: number, value: string) => {
+    const newLinks = [...(formData.conditionLinks || [])];
+    newLinks[idx] = value;
+    updateField("conditionLinks", newLinks);
+  };
+
+  const addConditionLink = () => {
+    updateField("conditionLinks", [...(formData.conditionLinks || []), ""]);
+  };
+
+  const removeConditionLink = (idx: number) => {
+    const newLinks = [...(formData.conditionLinks || [])];
+    newLinks.splice(idx, 1);
+    updateField("conditionLinks", newLinks);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -237,6 +254,7 @@ export function QuoteRuleFormSheet({
           : null,
       rate_percentage: formData.ratePercentage,
       conditions: formData.conditions,
+      condition_links: formData.conditionLinks,
       label: formData.label,
       applicable_make_ids:
         enableMakes && formData.applicableMakeIds?.length
@@ -302,15 +320,15 @@ export function QuoteRuleFormSheet({
     <Sheet open={true} onOpenChange={(open) => !open && onClose()}>
       <SheetContent
         side="right"
-        className="w-[95vw] sm:max-w-4xl lg:max-w-5xl h-full bg-slate-900 border-l border-slate-700 p-0 rounded-none flex flex-col pt-safe"
+        className="w-[95vw] sm:max-w-4xl lg:max-w-5xl h-full bg-card border-l border-border p-0 rounded-none flex flex-col pt-safe"
       >
         {/* Header */}
-        <SheetHeader className="flex flex-row items-center justify-between p-6 border-b border-slate-800 bg-slate-900/80 shrink-0 text-left">
+        <SheetHeader className="flex flex-row items-center justify-between p-6 border-b border-border bg-card/80 shrink-0 text-left">
           <div>
-            <SheetTitle className="text-xl font-syne font-semibold text-white">
+            <SheetTitle className="text-xl font-syne font-semibold text-foreground">
               {rule ? "Edit Pricing Rule" : "Create Pricing Rule"}
             </SheetTitle>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {rule
                 ? "Modify the rules for quotes."
                 : "Add a new pricing engine rule."}
@@ -327,12 +345,12 @@ export function QuoteRuleFormSheet({
           >
             {/* Sec 1: Company & Policy */}
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-slate-800 pb-2">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-border pb-2">
                 1. Company & Policy
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-slate-400">
+                  <label className="text-xs font-medium text-muted-foreground">
                     Insurance Company
                   </label>
                   <Combobox
@@ -347,16 +365,16 @@ export function QuoteRuleFormSheet({
                   >
                     <ComboboxInput
                       placeholder="Select company..."
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg h-[38px] text-sm text-white focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                      className="w-full bg-background border border-border rounded-lg h-[38px] text-sm text-foreground focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
                     />
-                    <ComboboxContent className="border-slate-800 bg-slate-900 text-white z-100">
+                    <ComboboxContent className="border-border bg-card text-foreground z-100">
                       <ComboboxEmpty>No companies found</ComboboxEmpty>
                       <ComboboxList>
                         {(c: any) => (
                           <ComboboxItem
                             key={c.id}
                             value={c}
-                            className="hover:bg-slate-800 focus:bg-slate-800 cursor-pointer"
+                            className="hover:bg-muted focus:bg-muted cursor-pointer"
                           >
                             {c.name}
                           </ComboboxItem>
@@ -379,7 +397,7 @@ export function QuoteRuleFormSheet({
                     />
                     <label
                       htmlFor="specify-policy"
-                      className="text-sm font-medium text-slate-300 cursor-pointer select-none"
+                      className="text-sm font-medium text-foreground cursor-pointer select-none"
                     >
                       Specify Policy Type
                     </label>
@@ -387,7 +405,7 @@ export function QuoteRuleFormSheet({
 
                   {specifyPolicyType && (
                     <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                      <label className="text-xs font-medium text-slate-400 mb-1.5 block">
+                      <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
                         Policy Name
                       </label>
                       <Input
@@ -401,7 +419,7 @@ export function QuoteRuleFormSheet({
                           updateField("policyType", e.target.value)
                         }
                         placeholder="e.g. Gold, Private, Platinum"
-                        className="w-full bg-slate-950 border border-slate-700 rounded-lg h-[38px] text-sm text-white focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                        className="w-full bg-background border border-border rounded-lg h-[38px] text-sm text-foreground focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
                         required
                         maxLength={60}
                       />
@@ -413,13 +431,13 @@ export function QuoteRuleFormSheet({
 
             {/* Sec 2: Vehicle Criteria */}
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-slate-800 pb-2">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-border pb-2">
                 2. Vehicle Matching Criteria
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-400">
+                    <label className="text-xs font-medium text-muted-foreground">
                       Fuel Type
                     </label>
                     <Switch
@@ -434,39 +452,39 @@ export function QuoteRuleFormSheet({
                         updateField("fuelType", val)
                       }
                     >
-                      <SelectTrigger className="w-full bg-slate-950 border border-slate-700 rounded-lg h-[38px] text-sm text-white focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none data-placeholder:text-slate-400">
+                      <SelectTrigger className="w-full bg-background border border-border rounded-lg h-[38px] text-sm text-foreground focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none data-placeholder:text-muted-foreground">
                         <SelectValue placeholder="Any Fuel" />
                       </SelectTrigger>
-                      <SelectContent className="border-slate-800 bg-slate-900 text-white z-60">
+                      <SelectContent className="border-border bg-card text-foreground z-60">
                         <SelectItem
                           value="any"
-                          className="hover:bg-slate-800 focus:bg-slate-800 cursor-pointer text-teal-400"
+                          className="hover:bg-muted focus:bg-muted cursor-pointer text-teal-400"
                         >
                           Any Fuel Type
                         </SelectItem>
                         <SelectItem
                           value="gasoline"
-                          className="hover:bg-slate-800 focus:bg-slate-800 cursor-pointer"
+                          className="hover:bg-muted focus:bg-muted cursor-pointer"
                         >
                           Gasoline
                         </SelectItem>
                         <SelectItem
                           value="electric"
-                          className="hover:bg-slate-800 focus:bg-slate-800 cursor-pointer"
+                          className="hover:bg-muted focus:bg-muted cursor-pointer"
                         >
                           Electric
                         </SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
-                    <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">
+                    <div className="w-full bg-background/50 border border-border rounded-lg h-[38px] flex items-center px-3 text-sm text-muted-foreground italic cursor-not-allowed">
                       Any Fuel
                     </div>
                   )}
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-400">
+                    <label className="text-xs font-medium text-muted-foreground">
                       Car Condition
                     </label>
                     <Switch
@@ -481,32 +499,32 @@ export function QuoteRuleFormSheet({
                         updateField("carCondition", val)
                       }
                     >
-                      <SelectTrigger className="w-full bg-slate-950 border border-slate-700 rounded-lg h-[38px] text-sm text-white focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none data-placeholder:text-slate-400">
+                      <SelectTrigger className="w-full bg-background border border-border rounded-lg h-[38px] text-sm text-foreground focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none data-placeholder:text-muted-foreground">
                         <SelectValue placeholder="Any Condition" />
                       </SelectTrigger>
-                      <SelectContent className="border-slate-800 bg-slate-900 text-white z-60">
+                      <SelectContent className="border-border bg-card text-foreground z-60">
                         <SelectItem
                           value="any"
-                          className="hover:bg-slate-800 focus:bg-slate-800 cursor-pointer text-teal-400"
+                          className="hover:bg-muted focus:bg-muted cursor-pointer text-teal-400"
                         >
                           Any Condition
                         </SelectItem>
                         <SelectItem
                           value="new"
-                          className="hover:bg-slate-800 focus:bg-slate-800 cursor-pointer"
+                          className="hover:bg-muted focus:bg-muted cursor-pointer"
                         >
                           Zero Mileage (New)
                         </SelectItem>
                         <SelectItem
                           value="used"
-                          className="hover:bg-slate-800 focus:bg-slate-800 cursor-pointer"
+                          className="hover:bg-muted focus:bg-muted cursor-pointer"
                         >
                           Used
                         </SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
-                    <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">
+                    <div className="w-full bg-background/50 border border-border rounded-lg h-[38px] flex items-center px-3 text-sm text-muted-foreground italic cursor-not-allowed">
                       Any Condition
                     </div>
                   )}
@@ -514,7 +532,7 @@ export function QuoteRuleFormSheet({
 
                 <div className="col-span-2 flex flex-col gap-1.5 animate-in fade-in">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-400">
+                    <label className="text-xs font-medium text-muted-foreground">
                       Car Make
                     </label>
                     <Switch
@@ -542,7 +560,7 @@ export function QuoteRuleFormSheet({
                       >
                         <ComboboxChips 
                           ref={makesAnchor} 
-                          className="w-full min-h-[38px] bg-slate-950 border-slate-700 rounded-lg text-sm text-white focus-within:ring-1 focus-within:ring-teal-500 focus-within:border-teal-500"
+                          className="w-full min-h-[38px] bg-background border-border rounded-lg text-sm text-foreground focus-within:ring-1 focus-within:ring-teal-500 focus-within:border-teal-500"
                         >
                           <ComboboxValue>
                             {(values: any[]) => (
@@ -550,7 +568,7 @@ export function QuoteRuleFormSheet({
                                 {(!values || values.length === 0) && (
                                   <Badge
                                     variant="outline"
-                                    className="bg-slate-800/50 text-slate-400 border-slate-700 pointer-events-none mr-2 font-normal"
+                                    className="bg-muted/50 text-muted-foreground border-border pointer-events-none mr-2 font-normal"
                                   >
                                     All Brands
                                   </Badge>
@@ -565,7 +583,7 @@ export function QuoteRuleFormSheet({
                                 ))}
                                 <ComboboxChipsInput 
                                   placeholder={(!values || values.length === 0) ? "Search and add makes..." : ""}
-                                  className="placeholder:text-slate-400 bg-transparent text-white w-full" 
+                                  className="placeholder:text-muted-foreground bg-transparent text-foreground w-full" 
                                 />
                               </React.Fragment>
                             )}
@@ -573,7 +591,7 @@ export function QuoteRuleFormSheet({
                         </ComboboxChips>
                         <ComboboxContent 
                           anchor={makesAnchor} 
-                          className="border-slate-800 bg-slate-900 text-white z-100"
+                          className="border-border bg-card text-foreground z-100"
                         >
                           <ComboboxEmpty>No makes found</ComboboxEmpty>
                           <ComboboxList>
@@ -581,7 +599,7 @@ export function QuoteRuleFormSheet({
                               <ComboboxItem
                                 key={m.id}
                                 value={m}
-                                className="hover:bg-slate-800 focus:bg-slate-800 cursor-pointer"
+                                className="hover:bg-muted focus:bg-muted cursor-pointer"
                               >
                                 {m.name}
                               </ComboboxItem>
@@ -591,7 +609,7 @@ export function QuoteRuleFormSheet({
                       </Combobox>
                     </>
                   ) : (
-                    <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">
+                    <div className="w-full bg-background/50 border border-border rounded-lg h-[38px] flex items-center px-3 text-sm text-muted-foreground italic cursor-not-allowed">
                       All Brands
                     </div>
                   )}
@@ -628,7 +646,7 @@ export function QuoteRuleFormSheet({
                       >
                         <ComboboxChips 
                           ref={excludedMakesAnchor} 
-                          className="w-full min-h-[38px] bg-slate-950 border-red-500/30 rounded-lg text-sm text-white focus-within:ring-1 focus-within:ring-red-500/50 focus-within:border-red-500/50"
+                          className="w-full min-h-[38px] bg-background border-red-500/30 rounded-lg text-sm text-foreground focus-within:ring-1 focus-within:ring-red-500/50 focus-within:border-red-500/50"
                         >
                           <ComboboxValue>
                             {(values: any[]) => (
@@ -636,7 +654,7 @@ export function QuoteRuleFormSheet({
                                 {(!values || values.length === 0) && (
                                   <Badge
                                     variant="outline"
-                                    className="bg-slate-800/50 text-slate-400 border-slate-700 pointer-events-none mr-2 font-normal"
+                                    className="bg-muted/50 text-muted-foreground border-border pointer-events-none mr-2 font-normal"
                                   >
                                     None (No Brands Excluded)
                                   </Badge>
@@ -651,7 +669,7 @@ export function QuoteRuleFormSheet({
                                 ))}
                                 <ComboboxChipsInput 
                                   placeholder={(!values || values.length === 0) ? "Search makes to exclude..." : ""}
-                                  className="placeholder:text-slate-400 bg-transparent text-white w-full" 
+                                  className="placeholder:text-muted-foreground bg-transparent text-foreground w-full" 
                                 />
                               </React.Fragment>
                             )}
@@ -659,7 +677,7 @@ export function QuoteRuleFormSheet({
                         </ComboboxChips>
                         <ComboboxContent 
                           anchor={excludedMakesAnchor} 
-                          className="border-slate-800 bg-slate-900 text-white z-100"
+                          className="border-border bg-card text-foreground z-100"
                         >
                           <ComboboxEmpty>No makes found</ComboboxEmpty>
                           <ComboboxList>
@@ -667,7 +685,7 @@ export function QuoteRuleFormSheet({
                               <ComboboxItem
                                 key={m.id}
                                 value={m}
-                                className="hover:bg-slate-800 focus:bg-slate-800 cursor-pointer"
+                                className="hover:bg-muted focus:bg-muted cursor-pointer"
                               >
                                 {m.name}
                               </ComboboxItem>
@@ -677,7 +695,7 @@ export function QuoteRuleFormSheet({
                       </Combobox>
                     </>
                   ) : (
-                    <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">
+                    <div className="w-full bg-background/50 border border-border rounded-lg h-[38px] flex items-center px-3 text-sm text-muted-foreground italic cursor-not-allowed">
                       None (No Brands Excluded)
                     </div>
                   )}
@@ -697,25 +715,25 @@ export function QuoteRuleFormSheet({
                         )
                       }
                     >
-                      <SelectTrigger className="w-full bg-slate-900 border border-amber-500/30 rounded-lg h-[38px] text-sm text-white focus-visible:ring-1 focus-visible:ring-amber-500 focus-visible:outline-none data-placeholder:text-amber-500/50">
+                      <SelectTrigger className="w-full bg-card border border-amber-500/30 rounded-lg h-[38px] text-sm text-foreground focus-visible:ring-1 focus-visible:ring-amber-500 focus-visible:outline-none data-placeholder:text-amber-500/50">
                         <SelectValue placeholder="Any (Applies to all Electric)" />
                       </SelectTrigger>
-                      <SelectContent className="border-amber-500/30 bg-slate-900 text-white z-60">
+                      <SelectContent className="border-amber-500/30 bg-card text-foreground z-60">
                         <SelectItem
                           value="none"
-                          className="hover:bg-slate-800 text-amber-500 focus:bg-slate-800 cursor-pointer"
+                          className="hover:bg-muted text-amber-500 focus:bg-muted cursor-pointer"
                         >
                           Any
                         </SelectItem>
                         <SelectItem
                           value="agency"
-                          className="hover:bg-slate-800 text-amber-500 focus:bg-slate-800 cursor-pointer"
+                          className="hover:bg-muted text-amber-500 focus:bg-muted cursor-pointer"
                         >
                           Must have Official Agency
                         </SelectItem>
                         <SelectItem
                           value="no_agency"
-                          className="hover:bg-slate-800 text-amber-500 focus:bg-slate-800 cursor-pointer"
+                          className="hover:bg-muted text-amber-500 focus:bg-muted cursor-pointer"
                         >
                           No Official Agency
                         </SelectItem>
@@ -728,14 +746,14 @@ export function QuoteRuleFormSheet({
 
             {/* Sec 3: Price & Age */}
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-slate-800 pb-2">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-border pb-2">
                 3. Limits (Price & Age)
               </h3>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-400">
+                    <label className="text-xs font-medium text-muted-foreground">
                       Min Price (EGP)
                     </label>
                     <Switch
@@ -748,17 +766,17 @@ export function QuoteRuleFormSheet({
                       required
                       value={formData.priceMin}
                       onChange={(val) => updateField("priceMin", val || 0)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg h-[38px] text-sm text-white font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                      className="w-full bg-background border border-border rounded-lg h-[38px] text-sm text-foreground font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
                     />
                   ) : (
-                    <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">
+                    <div className="w-full bg-background/50 border border-border rounded-lg h-[38px] flex items-center px-3 text-sm text-muted-foreground italic cursor-not-allowed">
                       No Minimum
                     </div>
                   )}
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-400">
+                    <label className="text-xs font-medium text-muted-foreground">
                       Max Price (Leave empty for none)
                     </label>
                     <Switch
@@ -770,18 +788,18 @@ export function QuoteRuleFormSheet({
                     <FormattedNumberInput
                       value={formData.priceMax}
                       onChange={(val) => updateField("priceMax", val)}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg h-[38px] text-sm text-white font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                      className="w-full bg-background border border-border rounded-lg h-[38px] text-sm text-foreground font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
                       placeholder="Unlimited"
                     />
                   ) : (
-                    <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">
+                    <div className="w-full bg-background/50 border border-border rounded-lg h-[38px] flex items-center px-3 text-sm text-muted-foreground italic cursor-not-allowed">
                       Unlimited
                     </div>
                   )}
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-400">
+                    <label className="text-xs font-medium text-muted-foreground">
                       Latest Vehicle Year Allowed
                     </label>
                     <Switch
@@ -798,18 +816,18 @@ export function QuoteRuleFormSheet({
                         if (val && val >= 1900 && val <= 2100) updateField("minYear", val);
                         else updateField("minYear", val);
                       }}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg h-[38px] text-sm text-white font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                      className="w-full bg-background border border-border rounded-lg h-[38px] text-sm text-foreground font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
                       placeholder={`e.g. ${currentYear + 1}`}
                     />
                   ) : (
-                    <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">
+                    <div className="w-full bg-background/50 border border-border rounded-lg h-[38px] flex items-center px-3 text-sm text-muted-foreground italic cursor-not-allowed">
                       Any (Current default: {currentYear + 1})
                     </div>
                   )}
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-400">
+                    <label className="text-xs font-medium text-muted-foreground">
                       Oldest Vehicle Year Allowed
                     </label>
                     <Switch
@@ -825,11 +843,11 @@ export function QuoteRuleFormSheet({
                         if (val && val >= 1900 && val <= 2100) updateField("maxYear", val);
                         else updateField("maxYear", val);
                       }}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg h-[38px] text-sm text-white font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                      className="w-full bg-background border border-border rounded-lg h-[38px] text-sm text-foreground font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
                       placeholder="e.g. 2015"
                     />
                   ) : (
-                    <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">
+                    <div className="w-full bg-background/50 border border-border rounded-lg h-[38px] flex items-center px-3 text-sm text-muted-foreground italic cursor-not-allowed">
                       Unlimited
                     </div>
                   )}
@@ -841,7 +859,7 @@ export function QuoteRuleFormSheet({
                       title="This completely disqualifies any car older than this year from ANY rule within this company."
                     >
                       Hard Company Cutoff Year{" "}
-                      <span className="text-slate-500 font-normal">
+                      <span className="text-muted-foreground font-normal">
                         (Disqualifies old cars globally for this company)
                       </span>
                     </label>
@@ -858,11 +876,11 @@ export function QuoteRuleFormSheet({
                         if (val && val >= 1900 && val <= 2100) updateField("cutoffYear", val);
                         else updateField("cutoffYear", val);
                       }}
-                      className="w-full bg-slate-950 border border-red-500/30 rounded-lg h-[38px] text-sm text-white font-ibm-mono focus-visible:ring-1 focus-visible:ring-red-500/50 focus-visible:border-red-500/50"
+                      className="w-full bg-background border border-red-500/30 rounded-lg h-[38px] text-sm text-foreground font-ibm-mono focus-visible:ring-1 focus-visible:ring-red-500/50 focus-visible:border-red-500/50"
                       placeholder="e.g. 2010"
                     />
                   ) : (
-                    <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg h-[38px] flex items-center px-3 text-sm text-slate-600 italic cursor-not-allowed">
+                    <div className="w-full bg-background/50 border border-border rounded-lg h-[38px] flex items-center px-3 text-sm text-muted-foreground italic cursor-not-allowed">
                       None
                     </div>
                   )}
@@ -872,12 +890,12 @@ export function QuoteRuleFormSheet({
 
             {/* Sec 4: Rating */}
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-slate-800 pb-2">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-border pb-2">
                 4. Calculation & Rating
               </h3>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-slate-400">
+                <label className="text-xs font-medium text-muted-foreground">
                   Rate Percentage (%)
                 </label>
                 <FormattedNumberInput
@@ -885,7 +903,7 @@ export function QuoteRuleFormSheet({
                   required
                   value={formData.ratePercentage}
                   onChange={(val) => updateField("ratePercentage", val || 0)}
-                  className="w-full max-w-xs bg-slate-950 border border-teal-500/50 rounded-lg h-[46px] text-lg text-teal-400 font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                  className="w-full max-w-xs bg-background border border-teal-500/50 rounded-lg h-[46px] text-lg text-teal-400 font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
                 />
               </div>
 
@@ -893,7 +911,7 @@ export function QuoteRuleFormSheet({
                 <span className="text-sm text-teal-400 font-medium">
                   Example Calculation (1,000,000 EGP)
                 </span>
-                <span className="text-xl font-bold font-ibm-mono text-white">
+                <span className="text-xl font-bold font-ibm-mono text-foreground">
                   EGP {currentPremiumExample.toLocaleString()}
                 </span>
               </div>
@@ -901,14 +919,14 @@ export function QuoteRuleFormSheet({
 
             {/* Sec 5: Conditions */}
             <section className="space-y-4 mb-10">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="flex items-center justify-between border-b border-border pb-2">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400">
                   5. Arabic Conditions
                 </h3>
                 <button
                   type="button"
                   onClick={addCondition}
-                  className="text-xs bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded text-white flex items-center gap-1 transition-colors"
+                  className="text-xs bg-muted hover:bg-accent px-2 py-1 rounded text-foreground flex items-center gap-1 transition-colors"
                 >
                   <Plus className="w-3 h-3" /> Add
                 </button>
@@ -935,13 +953,58 @@ export function QuoteRuleFormSheet({
                       }
                       placeholder="شرط بوليصة التأمين..."
                       dir="rtl"
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-white font-sans outline-none min-h-[60px] resize-y"
+                      className="w-full bg-background border border-border rounded-lg p-2.5 text-sm text-foreground font-sans outline-none min-h-[60px] resize-y"
                     />
                   </div>
                 ))}
                 {formData.conditions?.length === 0 && (
-                  <div className="text-center p-4 border border-dashed border-slate-700 rounded-lg text-slate-500 text-sm">
+                  <div className="text-center p-4 border border-dashed border-border rounded-lg text-muted-foreground text-sm">
                     No conditions added.
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-8 flex items-center justify-between border-b border-border pb-2">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400">
+                  Condition Links (URLs)
+                </h3>
+                <button
+                  type="button"
+                  onClick={addConditionLink}
+                  className="text-xs bg-muted hover:bg-accent px-2 py-1 rounded text-foreground flex items-center gap-1 transition-colors"
+                >
+                  <Plus className="w-3 h-3" /> Add Link
+                </button>
+              </div>
+
+              <div className="space-y-3 mt-4">
+                {formData.conditionLinks?.map((link, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-2 animate-in fade-in slide-in-from-top-1"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => removeConditionLink(idx)}
+                      className="mt-1 p-1.5 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20 shrink-0"
+                      aria-label={`Remove condition link ${idx + 1}`}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <Input
+                      type="url"
+                      value={link}
+                      onChange={(e) =>
+                        handleConditionLinkChange(idx, e.target.value)
+                      }
+                      placeholder="https://example.com/condition"
+                      className="w-full bg-background border border-border rounded-lg h-10 text-sm text-foreground focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                    />
+                  </div>
+                ))}
+                {formData.conditionLinks?.length === 0 && (
+                  <div className="text-center p-4 border border-dashed border-border rounded-lg text-muted-foreground text-sm">
+                    No condition links added.
                   </div>
                 )}
               </div>
@@ -950,9 +1013,9 @@ export function QuoteRuleFormSheet({
         </div>
 
         {/* Footer actions */}
-        <SheetFooter className="flex-row p-4 border-t border-slate-800 bg-slate-900 shrink-0 gap-3">
-          <label className="flex items-center gap-3 cursor-pointer flex-1 px-4 border border-slate-800 rounded-lg bg-slate-800/50 justify-center h-12">
-            <span className="text-sm font-medium text-slate-300">
+        <SheetFooter className="flex-row p-4 border-t border-border bg-card shrink-0 gap-3">
+          <label className="flex items-center gap-3 cursor-pointer flex-1 px-4 border border-border rounded-lg bg-muted/50 justify-center h-12">
+            <span className="text-sm font-medium text-foreground">
               Rule is Active
             </span>
             <Switch

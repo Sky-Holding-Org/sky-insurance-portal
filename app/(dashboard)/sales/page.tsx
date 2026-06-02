@@ -6,7 +6,7 @@ export default function SalesPage() {
     <div className="p-6 h-[calc(100vh-4rem)] flex flex-col xl:flex-row gap-6">
       {/* Left Panel: Form */}
       <div className="w-full xl:w-[400px] shrink-0 bg-card rounded-xl border border-border flex flex-col p-5 h-[calc(100vh-7rem)] overflow-y-auto custom-scrollbar">
-        <h2 className="font-syne text-xl font-semibold tracking-tight text-white mb-6">
+        <h2 className="font-syne text-xl font-semibold tracking-tight text-foreground mb-6">
           Quick Quote Calculator
         </h2>
         <CarSpecForm />

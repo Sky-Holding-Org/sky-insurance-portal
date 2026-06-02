@@ -31,14 +31,14 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
   };
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
+    <aside className="w-64 bg-card/50 backdrop-blur-md border-r border-border flex flex-col transition-all duration-300">
       {/* Brand */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-800">
+      <div className="h-16 flex items-center px-6 border-b border-border">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center border border-purple-500/50">
             <Codepen className="w-4 h-4 text-purple-400" />
           </div>
-          <span className="text-xl font-bold font-syne tracking-tight text-slate-100">
+          <span className="text-xl font-bold font-syne tracking-tight text-foreground">
             Sky Insurance
           </span>
         </div>
@@ -46,7 +46,7 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
 
       {/* Nav */}
       <div className="flex-1 py-4 flex flex-col gap-1 px-3">
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 px-2 pt-2">
+        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 px-2 pt-2">
           Super Admin
         </div>
 
@@ -61,7 +61,7 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all relative",
                 isActive
                   ? "bg-purple-500/10 text-purple-400"
-                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200",
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
               )}
             >
               {isActive && (
@@ -75,14 +75,14 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* Footer / User */}
-      <div className="p-4 border-t border-slate-800">
+      <div className="p-4 border-t border-border">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 font-semibold text-sm shrink-0 uppercase">
               {userEmail.charAt(0)}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-slate-200 truncate">
+              <p className="text-sm font-medium text-foreground truncate">
                 {userEmail.split("@")[0]}
               </p>
               <div className="flex items-center gap-1 mt-0.5">
@@ -96,7 +96,7 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
 
           <button
             onClick={handleLogout}
-            className="text-slate-500 hover:text-red-400 p-1.5 transition-colors"
+            className="text-muted-foreground hover:text-red-400 p-1.5 transition-colors"
             title="Log Out"
           >
             <svg

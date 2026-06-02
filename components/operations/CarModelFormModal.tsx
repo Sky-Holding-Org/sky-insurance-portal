@@ -109,13 +109,13 @@ export function CarModelFormModal({
     >
       <SheetContent
         side="right"
-        className="sm:max-w-md h-full flex flex-col bg-slate-900 border-l border-slate-700 p-0 rounded-none"
+        className="sm:max-w-md h-full flex flex-col bg-card border-l border-border p-0 rounded-none"
       >
-        <SheetHeader className="border-b border-slate-800 p-5 text-left shrink-0">
-          <SheetTitle className="text-lg font-syne font-semibold text-white">
+        <SheetHeader className="border-b border-border p-5 text-left shrink-0">
+          <SheetTitle className="text-lg font-syne font-semibold text-foreground">
             {model ? "Edit Trim" : "Add Trim"}
           </SheetTitle>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Configure {model ? "this trim" : "a new trim"} for this car make.
           </p>
         </SheetHeader>
@@ -133,7 +133,7 @@ export function CarModelFormModal({
             )}
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-300">
+              <label className="text-sm font-medium text-foreground">
                 Model Name
               </label>
               <Input
@@ -142,13 +142,13 @@ export function CarModelFormModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Corolla"
-                className="w-full bg-slate-950 border border-slate-700 text-white rounded-lg h-10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 transition-colors"
+                className="w-full bg-background border border-border text-foreground rounded-lg h-10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 transition-colors"
               />
             </div>
           </form>
         </div>
 
-        <SheetFooter className="flex-row justify-end gap-2 border-t border-slate-800 p-4 shrink-0 bg-slate-900/50">
+        <SheetFooter className="flex-row justify-end gap-2 border-t border-border p-4 shrink-0 bg-muted/30">
           <button
             type="submit"
             form="model-form"

@@ -4,6 +4,8 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { MobileBlocker } from "@/components/layout/MobileBlocker";
 
+import { ThemeProvider } from "@/components/theme-provider";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -36,18 +38,19 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn(
-        "dark",
-        geistSans.variable,
-        syne.variable,
-        ibmMono.variable,
-      )}
+      suppressHydrationWarning
+      className={cn(geistSans.variable, syne.variable, ibmMono.variable)}
     >
       <body className="antialiased min-h-screen bg-background text-foreground selection:bg-teal-500/30 font-sans">
-        <MobileBlocker />
-        <div className="hidden md:block min-h-screen">
-          {children}
-        </div>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <MobileBlocker />
+          <div className="hidden md:block min-h-screen">{children}</div>
+        </ThemeProvider>
       </body>
     </html>
   );

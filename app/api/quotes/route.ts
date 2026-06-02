@@ -63,6 +63,7 @@ export async function POST(req: Request) {
       ratePercentage: r.rate_percentage,
       conditions: r.conditions ?? [],
       conditionsEn: r.conditions_en ?? [],
+      conditionLinks: r.condition_links ?? [],
       label: r.label,
       applicableMakeIds: r.applicable_make_ids,
       excludedMakeIds: r.excluded_make_ids,

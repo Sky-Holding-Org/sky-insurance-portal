@@ -92,13 +92,13 @@ export function CompanyFormSheet({
     >
       <SheetContent
         side="right"
-        className="sm:max-w-xl h-full flex flex-col bg-slate-900 border-l border-slate-800 p-0 rounded-none pt-safe"
+        className="sm:max-w-xl h-full flex flex-col bg-card border-l border-border p-0 rounded-none pt-safe"
       >
-        <SheetHeader className="border-b border-slate-800 p-6 text-left shrink-0">
-          <SheetTitle className="text-xl font-syne font-semibold text-white">
+        <SheetHeader className="border-b border-border p-6 text-left shrink-0">
+          <SheetTitle className="text-xl font-syne font-semibold text-foreground">
             {company ? "Edit Company" : "Add New Company"}
           </SheetTitle>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {company
               ? "Update company details below."
               : "Enter the details for the new insurance partner."}
@@ -112,7 +112,7 @@ export function CompanyFormSheet({
             className="flex flex-col gap-6"
           >
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300">
+              <label className="text-sm font-medium text-foreground">
                 Company Name
               </label>
               <Input
@@ -120,16 +120,16 @@ export function CompanyFormSheet({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. MADA Insurances"
-                className="w-full bg-slate-950 border border-slate-700 text-white rounded-lg px-4 py-2.5 h-[42px] focus-visible:outline-none focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500 transition-colors"
+                className="w-full bg-background border border-border text-foreground rounded-lg px-4 py-2.5 h-[42px] focus-visible:outline-none focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500 transition-colors"
               />
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-lg bg-slate-800/50 border border-slate-700 mt-2">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border mt-2">
               <div>
-                <h4 className="text-sm font-medium text-slate-200">
+                <h4 className="text-sm font-medium text-foreground">
                   Active Status
                 </h4>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Inactive companies will not appear in sales quotes.
                 </p>
               </div>
@@ -142,7 +142,7 @@ export function CompanyFormSheet({
           </form>
         </div>
 
-        <SheetFooter className="flex-row justify-end gap-3 border-t border-slate-800 p-6 shrink-0 bg-slate-900">
+        <SheetFooter className="flex-row justify-end gap-3 border-t border-border p-6 shrink-0 bg-card">
           <button
             type="submit"
             form="company-form"

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircle, Loader2, Eye, EyeOff, Codepen } from "lucide-react";
 import { logLogin } from "@/lib/audit-logger";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -55,19 +56,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-xl shadow-xl overflow-hidden">
-        <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center border border-teal-500/50">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative transition-colors duration-300">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
+      <div className="w-full max-w-sm bg-card border border-border rounded-xl shadow-xl overflow-hidden">
+        <div className="p-6 border-b border-border flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center border border-teal-500/20 text-teal-600 dark:text-teal-400">
             <Codepen className="w-4 h-4" />
           </div>
-          <span className="text-xl font-bold font-syne text-white">
+          <span className="text-xl font-bold font-syne text-foreground">
             Sky Insurance
           </span>
         </div>
 
         <div className="p-6">
-          <h2 className="text-lg font-syne font-semibold text-white mb-6">
+          <h2 className="text-lg font-syne font-semibold text-foreground mb-6">
             Sign in to your account
           </h2>
 
@@ -80,7 +85,7 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-300">
+              <label className="text-sm font-medium text-foreground">
                 Email Address
               </label>
               <Input
@@ -89,12 +94,12 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="bg-slate-950 border-slate-700 text-white placeholder:text-slate-500 w-full"
+                className="w-full bg-background border border-border text-foreground rounded-lg px-3 py-2 h-10 focus-visible:outline-none focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500/30 transition-colors"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-300">
+              <label className="text-sm font-medium text-foreground">
                 Password
               </label>
               <div className="relative">
@@ -104,12 +109,12 @@ export default function LoginPage() {
                   value={password}
                   placeholder="Enter your password"
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-slate-950 border-slate-700 text-white w-full pr-10"
+                  className="w-full bg-background border border-border text-foreground rounded-lg pl-3 pr-10 py-2 h-10 focus-visible:outline-none focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500/30 transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-4 h-4" />
@@ -123,7 +128,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold"
+              className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold py-2 h-10 rounded-lg transition-colors"
             >
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Sign In

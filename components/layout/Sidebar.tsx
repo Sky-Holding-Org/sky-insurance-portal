@@ -60,7 +60,8 @@ export default function Sidebar({
   const opsItems = [
     {
       title: "Companies",
-      href: role === "super_admin" ? "/admin/companies" : "/operations/companies",
+      href:
+        role === "super_admin" ? "/admin/companies" : "/operations/companies",
       icon: <Users className="w-4 h-4" />,
     },
     {
@@ -76,14 +77,14 @@ export default function Sidebar({
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col transition-all duration-300">
+    <aside className="w-64 bg-card/50 backdrop-blur-md border-r border-border flex flex-col transition-all duration-300">
       {/* Brand */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-800">
+      <div className="h-16 flex items-center px-6 border-b border-border">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center border border-teal-500/50">
-            <Codepen className="w-4 h-4" />
+            <Codepen className="w-4 h-4 text-teal-500" />
           </div>
-          <span className="text-xl font-bold font-syne tracking-tight text-slate-100">
+          <span className="text-xl font-bold font-syne tracking-tight text-foreground">
             Sky Insurance
           </span>
         </div>
@@ -92,7 +93,7 @@ export default function Sidebar({
       {/* Main Navigation */}
       <div className="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto">
         {/* DASHBOARDS section */}
-        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 px-2 pt-2">
+        <div className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-1 px-2 pt-2">
           Dashboards
         </div>
 
@@ -106,8 +107,8 @@ export default function Sidebar({
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all relative",
                 isActive
-                  ? "bg-teal-500/10 text-teal-400"
-                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200",
+                  ? "bg-teal-500/10 text-teal-500"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               {isActive && (
@@ -127,8 +128,8 @@ export default function Sidebar({
               className={cn(
                 "w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                 isOpsOpen || pathname.startsWith("/operations")
-                  ? "text-slate-200"
-                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200",
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               <div className="flex items-center gap-3">
@@ -144,7 +145,7 @@ export default function Sidebar({
             </button>
 
             {isOpsOpen && (
-              <div className="mt-1 ml-3 flex flex-col gap-1 border-l border-slate-800 pl-3">
+              <div className="mt-1 ml-3 flex flex-col gap-1 border-l border-border pl-3">
                 {opsItems.map((item) => {
                   const isActive =
                     pathname === item.href ||
@@ -157,8 +158,8 @@ export default function Sidebar({
                       className={cn(
                         "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all relative",
                         isActive
-                          ? "bg-teal-500/10 text-teal-400"
-                          : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200",
+                          ? "bg-teal-500/10 text-teal-500"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
                       )}
                     >
                       {isActive && (
@@ -176,7 +177,7 @@ export default function Sidebar({
 
         {/* Super Admin Links */}
         {role === "super_admin" && (
-          <div className="mt-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 px-2 pt-2 border-t border-slate-800">
+          <div className="mt-2 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider mb-1 px-2 pt-2 border-t border-border">
             Admin
           </div>
         )}
@@ -187,8 +188,8 @@ export default function Sidebar({
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all relative mt-1",
                 pathname === "/admin/users"
-                  ? "bg-teal-500/10 text-teal-400"
-                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200",
+                  ? "bg-teal-500/10 text-teal-500"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               {pathname === "/admin/users" && (
@@ -197,14 +198,14 @@ export default function Sidebar({
               <Users className="w-4 h-4" />
               User Management
             </Link>
-            
+
             <Link
               href="/admin/audit-logs"
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all relative mt-1",
                 pathname === "/admin/audit-logs"
-                  ? "bg-teal-500/10 text-teal-400"
-                  : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200",
+                  ? "bg-teal-500/10 text-teal-500"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               {pathname === "/admin/audit-logs" && (
@@ -218,17 +219,17 @@ export default function Sidebar({
       </div>
 
       {/* Footer / User Area */}
-      <div className="p-4 border-t border-slate-800">
+      <div className="p-4 border-t border-border">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-semibold text-sm shrink-0 uppercase">
+            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold text-sm shrink-0 uppercase">
               {userEmail.charAt(0)}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-slate-200 truncate">
+              <p className="text-sm font-medium text-foreground truncate">
                 {userEmail.split("@")[0]}
               </p>
-              <p className="text-xs text-slate-500 truncate capitalize">
+              <p className="text-xs text-muted-foreground truncate capitalize">
                 {role === "operation"
                   ? "Operations Manager"
                   : role === "super_admin"
@@ -240,7 +241,7 @@ export default function Sidebar({
 
           <button
             onClick={handleLogout}
-            className="text-slate-500 hover:text-red-400 p-1.5 transition-colors"
+            className="text-muted-foreground hover:text-red-500 p-1.5 transition-colors"
             title="Log Out"
           >
             <svg

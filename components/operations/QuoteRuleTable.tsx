@@ -101,6 +101,7 @@ export function QuoteRuleTable() {
         ratePercentage: r.rate_percentage,
         conditions: r.conditions ?? [],
         conditionsEn: r.conditions_en ?? [],
+        conditionLinks: r.condition_links ?? [],
         label: r.label,
         applicableMakeIds: r.applicable_make_ids,
         excludedMakeIds: r.excluded_make_ids,
@@ -272,41 +273,41 @@ export function QuoteRuleTable() {
 
   return (
     <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden">
-      <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-slate-900/50">
+      <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-muted/30">
         <div className="flex items-center gap-4">
-          <h3 className="font-syne font-semibold text-white">
+          <h3 className="font-syne font-semibold text-foreground">
             Pricing Rules
-            <span className="text-teal-400 bg-teal-500/10 px-2 py-1 rounded text-sm ml-2 font-ibm-mono font-medium">
+            <span className="text-teal-500 bg-teal-500/10 px-2 py-1 rounded text-sm ml-2 font-ibm-mono font-medium">
               {rules.length} Total
             </span>
           </h3>
           <div className="relative w-64">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search companies or labels..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 text-sm rounded-lg pl-9 pr-3 py-2 h-[38px] text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500"
+              className="w-full bg-background border border-border text-sm rounded-lg pl-9 pr-3 py-2 h-[38px] text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500"
             />
           </div>
           <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
-            <SelectTrigger className="w-40 bg-slate-950 border-slate-800 text-slate-300 h-[38px] hover:bg-slate-900 transition-colors focus:ring-1 focus:ring-teal-500">
+            <SelectTrigger className="w-40 bg-background border-border text-muted-foreground h-[38px] hover:bg-muted transition-colors focus:ring-1 focus:ring-teal-500">
               <div className="flex items-center gap-2 text-sm">
                 <ListFilter className="w-4 h-4 text-teal-500" />
                 <SelectValue placeholder="Sort by" />
               </div>
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800 text-white">
+            <SelectContent className="bg-popover border-border text-popover-foreground">
               <SelectItem
                 value="alphabet"
-                className="cursor-pointer focus:bg-slate-800 focus:text-white"
+                className="cursor-pointer focus:bg-accent focus:text-accent-foreground"
               >
                 Alphabetical
               </SelectItem>
               <SelectItem
                 value="recent"
-                className="cursor-pointer focus:bg-slate-800 focus:text-white"
+                className="cursor-pointer focus:bg-accent focus:text-accent-foreground"
               >
                 Last Added
               </SelectItem>
@@ -336,9 +337,9 @@ export function QuoteRuleTable() {
         </div>
       </div>
 
-      <div className="relative flex-1 overflow-auto bg-slate-950/20">
-        <Table className="w-full text-left text-sm text-slate-300">
-          <TableHeader className="bg-slate-900 sticky top-0 border-b border-slate-800 text-xs uppercase font-medium text-slate-400 z-10 shadow-sm">
+      <div className="relative flex-1 overflow-auto bg-muted/10">
+        <Table className="w-full text-left text-sm text-muted-foreground">
+          <TableHeader className="bg-muted sticky top-0 border-b border-border text-xs uppercase font-medium text-muted-foreground z-10 shadow-sm">
             <TableRow className="border-b-0 hover:bg-transparent">
               <TableHead className="w-12 px-6 py-4 h-auto">
                 <Checkbox
@@ -380,7 +381,7 @@ export function QuoteRuleTable() {
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="divide-y divide-slate-800/50">
+          <TableBody className="divide-y divide-border">
             {isLoading ? (
               <TableRow className="hover:bg-transparent border-b-0">
                 <TableCell colSpan={10} className="p-0">
@@ -395,14 +396,14 @@ export function QuoteRuleTable() {
                   {search ? (
                     <Empty>
                       <EmptyMedia>
-                        <Search className="w-5 h-5 text-slate-600" />
+                        <Search className="w-5 h-5 text-muted-foreground" />
                       </EmptyMedia>
                       <EmptyTitle>No rules matching "{search}"</EmptyTitle>
                     </Empty>
                   ) : (
                     <Empty>
                       <EmptyMedia>
-                        <FileText className="w-5 h-5 text-slate-600" />
+                        <FileText className="w-5 h-5 text-muted-foreground" />
                       </EmptyMedia>
                       <EmptyTitle>No quote rules</EmptyTitle>
                       <EmptyDescription>
@@ -456,7 +457,7 @@ export function QuoteRuleTable() {
                       setIsFormOpen(true);
                     }}
                     className={cn(
-                      "hover:bg-slate-800/30 transition-all duration-200 group border-b-0 cursor-pointer",
+                      "hover:bg-muted/40 transition-all duration-200 group border-b-0 cursor-pointer",
                       !rule.is_active && "opacity-50 grayscale",
                     )}
                     initial={{ opacity: 0, y: 5 }}
@@ -472,7 +473,7 @@ export function QuoteRuleTable() {
                     </TableCell>
                     <TableCell className="px-6 py-5 whitespace-nowrap">
                       <div className="flex flex-col">
-                        <span className="font-medium text-slate-200">
+                        <span className="font-medium text-foreground">
                           {rule.companyName}
                         </span>
                         <div className="flex items-center gap-2 mt-1">
@@ -481,7 +482,7 @@ export function QuoteRuleTable() {
                               "text-[10px] font-semibold px-2 py-0.5 rounded capitalize",
                               rule.policyType === "gold"
                                 ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
-                                : "bg-slate-800 text-slate-400 border border-slate-700",
+                                : "bg-muted text-muted-foreground border border-border",
                             )}
                           >
                             {rule.policyType}
@@ -493,7 +494,7 @@ export function QuoteRuleTable() {
                     <TableCell className="px-6 py-5">
                       <div className="flex flex-col gap-1 text-xs">
                         <span className="flex items-center gap-1.5">
-                          <span className="capitalize text-slate-300">
+                          <span className="capitalize text-muted-foreground">
                             {rule.fuelType}
                           </span>
                         </span>
@@ -502,7 +503,7 @@ export function QuoteRuleTable() {
 
                     <TableCell className="px-6 py-5 text-xs">
                       <div className="flex flex-col gap-1.5">
-                        <span className="text-slate-300">{makesIncluded}</span>
+                        <span className="text-muted-foreground">{makesIncluded}</span>
                         {makesExcluded && (
                           <span className="text-red-400 font-medium whitespace-normal">
                             Excludes: {makesExcluded}
@@ -512,7 +513,7 @@ export function QuoteRuleTable() {
                     </TableCell>
 
                     <TableCell className="px-6 py-5 font-ibm-mono text-xs">
-                      <div className="flex flex-col text-slate-400">
+                      <div className="flex flex-col text-muted-foreground">
                         <span>
                           Min:{" "}
                           {formatEGP(rule.priceMin).replace("EGP", "").trim()}
@@ -526,7 +527,7 @@ export function QuoteRuleTable() {
                       </div>
                     </TableCell>
 
-                    <TableCell className="px-6 py-5 text-xs text-slate-400">
+                    <TableCell className="px-6 py-5 text-xs text-muted-foreground">
                       {(() => {
                         const currentYear = new Date().getFullYear();
                         const maxYear = currentYear - rule.ageMinYears;
@@ -553,7 +554,7 @@ export function QuoteRuleTable() {
                       </span>
                     </TableCell>
 
-                    <TableCell className="px-6 py-5 text-right font-ibm-mono text-slate-300">
+                    <TableCell className="px-6 py-5 text-right font-ibm-mono text-muted-foreground">
                       {formatEGP(estPremium)}
                     </TableCell>
 
@@ -564,7 +565,7 @@ export function QuoteRuleTable() {
                             "text-[10px] font-semibold uppercase tracking-wider",
                             (rule as any).is_active
                               ? "text-teal-500/80"
-                              : "text-slate-500",
+                              : "text-muted-foreground",
                           )}
                         >
                           {(rule as any).is_active ? "Active" : "Off"}
@@ -586,14 +587,14 @@ export function QuoteRuleTable() {
                             setEditingRule(rule);
                             setIsFormOpen(true);
                           }}
-                          className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-700 rounded transition-colors"
+                          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                           aria-label={`Edit rule for ${rule.companyName}`}
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setDeletingId(rule.id)}
-                          className="p-1.5 text-slate-400 hover:text-danger hover:bg-danger/10 rounded transition-colors"
+                          className="p-1.5 text-muted-foreground hover:text-danger hover:bg-danger/10 rounded transition-colors"
                           aria-label={`Delete rule for ${rule.companyName}`}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -607,7 +608,7 @@ export function QuoteRuleTable() {
           </TableBody>
         </Table>
       </div>
-      <div className="p-3 border-t border-border bg-slate-900/50 text-xs text-slate-500 text-center shrink-0">
+      <div className="p-3 border-t border-border bg-muted/30 text-xs text-muted-foreground text-center shrink-0">
         Total number of rules: {rules.length}
       </div>
 
@@ -632,12 +633,12 @@ export function QuoteRuleTable() {
           }
         }}
       >
-        <AlertDialogContent className="bg-slate-900 border-slate-800">
+        <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">
+            <AlertDialogTitle className="text-foreground">
               Are you absolutely sure?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-muted-foreground">
               This action cannot be undone. This will permanently delete{" "}
               {isDeletingBulk
                 ? "the selected pricing rules"
@@ -646,12 +647,12 @@ export function QuoteRuleTable() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-700">
+            <AlertDialogCancel className="bg-muted text-foreground hover:bg-accent border-border">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={isDeletingBulk ? confirmBulkDelete : confirmDelete}
-              className="bg-red-500 text-white hover:bg-red-600"
+              className="bg-red-500 text-foreground hover:bg-red-600"
             >
               Delete {isDeletingBulk ? "Selected" : "Rule"}
             </AlertDialogAction>

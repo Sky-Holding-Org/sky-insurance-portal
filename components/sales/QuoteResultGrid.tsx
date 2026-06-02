@@ -15,7 +15,7 @@ export function QuoteResultGrid() {
 
   if (isLoading) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-slate-500 gap-4">
+      <div className="h-full flex flex-col items-center justify-center text-muted-foreground gap-4">
         <div className="w-10 h-10 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin" />
         <span className="text-sm font-medium animate-pulse">
           Calculating optimal rates...
@@ -29,7 +29,7 @@ export function QuoteResultGrid() {
       <div className="h-full flex flex-col items-center justify-center p-6">
         <Empty className="h-full min-h-[400px]">
           <EmptyMedia>
-            <Calculator className="w-5 h-5 text-slate-600" />
+            <Calculator className="w-5 h-5 text-muted-foreground" />
           </EmptyMedia>
           <EmptyTitle>Enter car specs</EmptyTitle>
           <EmptyDescription className="max-w-[280px]">
@@ -46,7 +46,7 @@ export function QuoteResultGrid() {
       <div className="h-full flex flex-col items-center justify-center p-6">
         <Empty className="h-full min-h-[400px]">
           <EmptyMedia>
-            <SearchX className="w-5 h-5 text-slate-600" />
+            <SearchX className="w-5 h-5 text-muted-foreground" />
           </EmptyMedia>
           <EmptyTitle>No matching quotes</EmptyTitle>
           <EmptyDescription className="max-w-[280px]">
@@ -80,14 +80,14 @@ export function QuoteResultGrid() {
   return (
     <div className="flex flex-col gap-4 h-full">
       <div className="flex items-center justify-between px-1 shrink-0">
-        <h3 className="font-syne text-lg font-medium text-slate-200">
+        <h3 className="font-syne text-lg font-medium text-foreground">
           Available Quotes{" "}
           <span className="text-teal-400  bg-teal-500/10 px-2 py-1 rounded text-sm ml-2">
             {quotes.length} found
           </span>
         </h3>
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-slate-400">
+          <span className="text-sm font-medium text-muted-foreground">
             {companyCounts} Companies
           </span>
         </div>
@@ -107,7 +107,7 @@ export function QuoteResultGrid() {
       <div className="flex-1 overflow-y-auto pr-2 pb-6 space-y-8">
         {sortedCompanies.map((companyName, compIdx) => (
           <div key={companyName} className="space-y-4">
-            <h4 className="font-syne font-semibold text-slate-300 text-base border-b border-slate-800 pb-2">
+            <h4 className="font-syne font-semibold text-foreground text-base border-b border-border pb-2">
               {companyName}
             </h4>
             <div className="space-y-4">

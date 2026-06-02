@@ -42,7 +42,7 @@
   --color-popover-foreground: var(--text-primary);
   --color-popover: var(--bg-secondary);
   --color-card-foreground: var(--text-primary);
-  --color-card: var(--bg-secondary);
+  --color-card: var(--bg-card);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -53,23 +53,51 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root,
-.dark {
-  --bg-primary: #020817;
-  --bg-secondary: #0f172a;
-  --bg-card: rgba(15, 23, 42, 0.6);
-  --border: rgba(148, 163, 184, 0.08);
-  --accent: #00d4b4;
-  --accent-dim: rgba(0, 212, 180, 0.12);
-  --text-primary: #f1f5f9;
-  --text-muted: #64748b;
-  --danger: #ff4560;
-  --warning: #f59e0b;
-  --success: #10b981;
-  --gold: #f59e0b;
+:root {
+  /* Light Mode: Trust & Security (Clean Zinc & Emerald) */
+  --bg-primary: oklch(0.995 0 0);
+  --bg-secondary: oklch(0.975 0 0);
+  --bg-card: oklch(1 0 0);
+  --border: oklch(0.92 0 0);
 
-  --radius: 0.75rem;
-  --sidebar-ring: rgba(0, 212, 180, 0.5);
+  /* Deep Premium Emerald Green */
+  --accent: oklch(0.48 0.12 165);
+  --accent-dim: oklch(0.48 0.12 165 / 0.1);
+
+  --text-primary: oklch(0.2 0 0);
+  --text-muted: oklch(0.55 0 0);
+
+  --danger: oklch(0.6 0.18 25);
+  --warning: oklch(0.75 0.15 70);
+  --success: oklch(0.65 0.15 160);
+  --gold: oklch(0.75 0.15 70);
+
+  /* Modern Sharp Professional Radius */
+  --radius: 0.5rem;
+  --sidebar-ring: oklch(0.48 0.12 165 / 0.4);
+}
+
+.dark {
+  /* Dark Mode: Sleek & Professional Zinc */
+  --bg-primary: oklch(0.15 0 0);
+  --bg-secondary: oklch(0.18 0 0);
+  --bg-card: oklch(0.17 0 0);
+  --border: oklch(0.25 0 0);
+
+  /* Lighter vibrant Emerald for dark mode contrast */
+  --accent: oklch(0.75 0.14 165);
+  --accent-dim: oklch(0.75 0.14 165 / 0.15);
+
+  --text-primary: oklch(0.98 0 0);
+  --text-muted: oklch(0.7 0 0);
+
+  --danger: oklch(0.65 0.18 25);
+  --warning: oklch(0.75 0.15 70);
+  --success: oklch(0.7 0.15 160);
+  --gold: oklch(0.75 0.15 70);
+
+  --radius: 0.5rem;
+  --sidebar-ring: oklch(0.75 0.14 165 / 0.5);
 }
 
 @layer base {

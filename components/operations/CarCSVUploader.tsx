@@ -258,19 +258,19 @@ export function CarCSVUploader({ onSuccess }: UploaderProps) {
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogTrigger asChild>
         <button
-          className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg flex items-center gap-2 transition-colors border border-slate-700"
+          className="px-3 py-1.5 bg-muted hover:bg-accent text-foreground text-sm font-medium rounded-lg flex items-center gap-2 transition-colors border border-border"
         >
           <Upload className="w-4 h-4" />
           Import File
         </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl bg-slate-900 border-slate-800">
+      <DialogContent className="sm:max-w-xl bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-xl font-syne text-white flex items-center gap-2">
+          <DialogTitle className="text-xl font-syne text-foreground flex items-center gap-2">
             <FileUp className="w-5 h-5 text-teal-500" />
             Import Car Database
           </DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription className="text-muted-foreground">
             Upload a CSV or XLSX file containing Make, Chinese Origin (true/false), and Model to bulk import data.
           </DialogDescription>
         </DialogHeader>
@@ -286,12 +286,12 @@ export function CarCSVUploader({ onSuccess }: UploaderProps) {
           
           <div 
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-slate-700 hover:border-teal-500/50 hover:bg-slate-800/30 rounded-lg p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
+            className="border-2 border-dashed border-border hover:border-teal-500/50 hover:bg-muted/40 rounded-lg p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all"
           >
-            <Upload className="w-8 h-8 text-slate-500" />
+            <Upload className="w-8 h-8 text-muted-foreground" />
             <div className="text-center">
-              <p className="text-sm font-medium text-slate-300">Click to browse or drag file here</p>
-              <p className="text-xs text-slate-500 mt-1">Format: Make, Is Chinese, Model (.csv or .xlsx)</p>
+              <p className="text-sm font-medium text-foreground">Click to browse or drag file here</p>
+              <p className="text-xs text-muted-foreground mt-1">Format: Make, Is Chinese, Model (.csv or .xlsx)</p>
             </div>
           </div>
 
@@ -303,20 +303,20 @@ export function CarCSVUploader({ onSuccess }: UploaderProps) {
           )}
 
           {preview.length > 0 && !error && (
-            <div className="bg-slate-950 border border-slate-800 rounded-lg overflow-hidden">
-              <div className="bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300 border-b border-slate-800 flex justify-between">
+            <div className="bg-background border border-border rounded-lg overflow-hidden">
+              <div className="bg-muted/50 px-4 py-2 text-sm font-medium text-foreground border-b border-border flex justify-between">
                 <span>Preview ({preview.length} rows)</span>
               </div>
               <div className="max-h-[200px] overflow-y-auto p-4 custom-scrollbar">
                 <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-slate-500">
+                  <thead className="text-xs text-muted-foreground">
                     <tr>
                       <th className="pb-2 font-medium">Make</th>
                       <th className="pb-2 font-medium">Chinese</th>
                       <th className="pb-2 font-medium">Model</th>
                     </tr>
                   </thead>
-                  <tbody className="text-slate-300 divide-y divide-slate-800">
+                  <tbody className="text-foreground divide-y divide-slate-800">
                     {preview.slice(0, 10).map((row, i) => (
                       <tr key={i}>
                         <td className="py-2">{row.make}</td>
@@ -324,7 +324,7 @@ export function CarCSVUploader({ onSuccess }: UploaderProps) {
                             {row.isChinese ? (
                                 <span className="text-amber-500">Yes</span>
                             ) : (
-                                <span className="text-slate-500">No</span>
+                                <span className="text-muted-foreground">No</span>
                             )}
                         </td>
                         <td className="py-2">{row.model}</td>
@@ -333,7 +333,7 @@ export function CarCSVUploader({ onSuccess }: UploaderProps) {
                   </tbody>
                 </table>
                 {preview.length > 10 && (
-                  <p className="text-xs text-slate-500 text-center mt-3 pt-3 border-t border-slate-800">
+                  <p className="text-xs text-muted-foreground text-center mt-3 pt-3 border-t border-border">
                     Showing 10 of {preview.length} rows
                   </p>
                 )}
@@ -342,11 +342,11 @@ export function CarCSVUploader({ onSuccess }: UploaderProps) {
           )}
         </div>
 
-        <DialogFooter className="border-t border-slate-800 pt-4">
+        <DialogFooter className="border-t border-border pt-4">
           <button
             onClick={() => handleClose(false)}
             disabled={isProcessing}
-            className="px-4 py-2 text-sm text-slate-300 hover:text-white transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm text-foreground hover:text-foreground transition-colors disabled:opacity-50"
           >
             Cancel
           </button>

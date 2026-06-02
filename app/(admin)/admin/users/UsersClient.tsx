@@ -22,7 +22,11 @@ type User = {
   };
 };
 
-export default function UsersClient({ initialUsers }: { initialUsers: User[] }) {
+export default function UsersClient({
+  initialUsers,
+}: {
+  initialUsers: User[];
+}) {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -64,7 +68,9 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
         if (res.error) {
           alert(res.error);
         } else if (res.user) {
-          setUsers(users.map(u => u.id === editingUser.id ? res.user as any : u));
+          setUsers(
+            users.map((u) => (u.id === editingUser.id ? (res.user as any) : u)),
+          );
           setIsModalOpen(false);
         }
       } else {
@@ -90,13 +96,13 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this user?")) return;
-    
+
     try {
       const res = await deleteUser(id);
       if (res.error) {
         alert(res.error);
       } else {
-        setUsers(users.filter(u => u.id !== id));
+        setUsers(users.filter((u) => u.id !== id));
       }
     } catch (err: any) {
       alert("An error occurred: " + err.message);
@@ -107,41 +113,54 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">User Management</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">
+            User Management
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Create, update, and manage system users.
           </p>
         </div>
-        <Button onClick={openCreateModal} className="bg-purple-600 hover:bg-purple-500 text-white">
+        <Button
+          onClick={openCreateModal}
+          className="bg-purple-600 hover:bg-purple-500 text-white font-medium"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Add User
         </Button>
       </div>
 
-      <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/50">
+      <div className="border border-border rounded-xl overflow-hidden bg-card/50">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent border-slate-800">
-              <TableHead className="text-slate-400">Email</TableHead>
-              <TableHead className="text-slate-400">Role</TableHead>
-              <TableHead className="text-slate-400 text-right">Actions</TableHead>
+            <TableRow className="hover:bg-transparent border-border">
+              <TableHead className="text-muted-foreground">Email</TableHead>
+              <TableHead className="text-muted-foreground">Role</TableHead>
+              <TableHead className="text-muted-foreground text-right">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.length === 0 ? (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={3} className="h-24 text-center text-slate-500">
+                <TableCell
+                  colSpan={3}
+                  className="h-24 text-center text-muted-foreground/60"
+                >
                   No users found.
                 </TableCell>
               </TableRow>
             ) : (
               users.map((user) => (
-                <TableRow key={user.id} className="border-slate-800 hover:bg-slate-800/50">
-                  <TableCell className="font-medium text-slate-200">
+                <TableRow
+                  key={user.id}
+                  className="border-border hover:bg-muted/50 transition-colors"
+                >
+                  <TableCell className="font-medium text-foreground">
                     {user.email}
                   </TableCell>
                   <TableCell>
-                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-slate-800 text-slate-300 capitalize">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 capitalize">
                       {user.user_metadata?.role || "sales"}
                     </span>
                   </TableCell>
@@ -151,7 +170,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
                         variant="ghost"
                         size="icon"
                         onClick={() => openEditModal(user)}
-                        className="h-8 w-8 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
@@ -159,7 +178,7 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(user.id)}
-                        className="h-8 w-8 text-slate-400 hover:text-red-400 hover:bg-red-500/10"
+                        className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 dark:hover:text-red-400"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -174,27 +193,29 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="p-6 border-b border-slate-800">
-              <h2 className="text-lg font-semibold text-white">
+          <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-6 border-b border-border">
+              <h2 className="text-lg font-semibold text-foreground">
                 {editingUser ? "Edit User" : "Create New User"}
               </h2>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-300">Email</label>
+                <label className="text-sm font-medium text-foreground">
+                  Email
+                </label>
                 <Input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="user@example.com"
-                  className="bg-slate-950 border-slate-800 text-white"
+                  className="w-full bg-background border border-border text-foreground rounded-lg px-3 py-2 h-10 focus-visible:outline-none focus-visible:border-purple-500 focus-visible:ring-1 focus-visible:ring-purple-500/30 transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-300">
+                <label className="text-sm font-medium text-foreground">
                   Password {editingUser && "(leave blank to keep current)"}
                 </label>
                 <div className="relative">
@@ -204,12 +225,12 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="bg-slate-950 border-slate-800 text-white pr-10"
+                    className="w-full bg-background border border-border text-foreground rounded-lg pl-3 pr-10 py-2 h-10 focus-visible:outline-none focus-visible:border-purple-500 focus-visible:ring-1 focus-visible:ring-purple-500/30 transition-colors"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -221,11 +242,13 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-300">Role</label>
+                <label className="text-sm font-medium text-foreground">
+                  Role
+                </label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full h-10 px-3 rounded-md bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full h-10 px-3 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/30 transition-colors"
                 >
                   <option value="sales">Sales</option>
                   <option value="operation">Operation</option>
@@ -238,14 +261,14 @@ export default function UsersClient({ initialUsers }: { initialUsers: User[] }) 
                   type="button"
                   variant="ghost"
                   onClick={() => setIsModalOpen(false)}
-                  className="text-slate-400 hover:text-white"
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="bg-purple-600 hover:bg-purple-500 text-white"
+                  className="bg-purple-600 hover:bg-purple-500 text-white font-medium"
                 >
                   {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   {editingUser ? "Save Changes" : "Create User"}

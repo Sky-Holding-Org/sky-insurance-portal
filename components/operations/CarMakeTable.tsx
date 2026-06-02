@@ -161,9 +161,9 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-900/50">
+    <div className="flex flex-col h-full bg-muted/30">
       <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
-        <h3 className="font-syne font-semibold text-white">
+        <h3 className="font-syne font-semibold text-foreground">
           Car Makes
           <span className="text-teal-400 bg-teal-500/10 px-2 py-1 rounded text-sm ml-2 font-ibm-mono font-medium">
             {makes.length} Total
@@ -202,33 +202,33 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
           className="mr-1"
         />
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Search makes..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 text-sm rounded-lg pl-9 pr-3 py-2 text-white h-[38px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500"
+            className="w-full bg-background border border-border text-sm rounded-lg pl-9 pr-3 py-2 text-foreground h-[38px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500"
           />
         </div>
         <div className="shrink-0 w-36">
           <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
-            <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-slate-300 h-[38px] hover:bg-slate-900 transition-colors focus:ring-1 focus:ring-teal-500">
+            <SelectTrigger className="w-full bg-background border-border text-foreground h-[38px] hover:bg-card transition-colors focus:ring-1 focus:ring-teal-500">
               <div className="flex items-center gap-2 text-sm">
                 <ListFilter className="w-4 h-4 text-teal-500" />
                 <SelectValue placeholder="Sort by" />
               </div>
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800 text-white">
+            <SelectContent className="bg-card border-border text-foreground">
               <SelectItem
                 value="alphabet"
-                className="cursor-pointer focus:bg-slate-800 focus:text-white"
+                className="cursor-pointer focus:bg-muted focus:text-foreground"
               >
                 Alphabetical
               </SelectItem>
               <SelectItem
                 value="recent"
-                className="cursor-pointer focus:bg-slate-800 focus:text-white"
+                className="cursor-pointer focus:bg-muted focus:text-foreground"
               >
                 Last Added
               </SelectItem>
@@ -243,7 +243,7 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
             <div className="w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="p-4 text-center text-sm text-slate-500">
+          <div className="p-4 text-center text-sm text-muted-foreground">
             No makes found
           </div>
         ) : (
@@ -257,7 +257,7 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
                   "group flex items-center p-3 rounded-lg cursor-pointer transition-all border",
                   isSelected
                     ? "bg-teal-500/10 border-teal-500/30 text-teal-400"
-                    : "bg-transparent border-transparent text-slate-300 hover:bg-slate-800/50 hover:border-slate-700/50",
+                    : "bg-transparent border-transparent text-foreground hover:bg-muted/50 hover:border-border",
                 )}
               >
                 <div
@@ -275,7 +275,7 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
                   <span
                     className={cn(
                       "font-medium",
-                      isSelected ? "text-teal-400" : "text-slate-200",
+                      isSelected ? "text-teal-400" : "text-foreground",
                     )}
                   >
                     {make.name}
@@ -301,7 +301,7 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
                         setEditingMake(make);
                         setIsFormOpen(true);
                       }}
-                      className="p-1.5 text-slate-400 hover:text-white rounded hover:bg-slate-700"
+                      className="p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-accent"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
@@ -310,7 +310,7 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
                         e.stopPropagation();
                         setDeletingId(make.id);
                       }}
-                      className="p-1.5 text-slate-400 hover:text-danger rounded hover:bg-danger/10"
+                      className="p-1.5 text-muted-foreground hover:text-danger rounded hover:bg-danger/10"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -320,7 +320,7 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
                       "w-4 h-4 transition-transform",
                       isSelected
                         ? "text-teal-500 translate-x-1"
-                        : "text-slate-600",
+                        : "text-muted-foreground",
                     )}
                   />
                 </div>
@@ -350,24 +350,24 @@ export function CarMakeTable({ selectedId, onSelect }: CarMakeTableProps) {
           }
         }}
       >
-        <AlertDialogContent className="bg-slate-900 border-slate-800">
+        <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">
+            <AlertDialogTitle className="text-foreground">
               Are you absolutely sure?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-muted-foreground">
               This action cannot be undone. This will permanently delete{" "}
               {isDeletingBulk ? "the selected car makes" : "this car make"} and
               all associated models.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-700">
+            <AlertDialogCancel className="bg-muted text-foreground hover:bg-accent border-border">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={isDeletingBulk ? confirmBulkDelete : confirmDelete}
-              className="bg-red-500 text-white hover:bg-red-600"
+              className="bg-red-500 text-foreground hover:bg-red-600"
             >
               Delete {isDeletingBulk ? "Selected" : "Make"}
             </AlertDialogAction>

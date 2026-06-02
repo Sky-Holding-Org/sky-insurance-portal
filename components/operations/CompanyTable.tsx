@@ -203,34 +203,34 @@ export function CompanyTable() {
   return (
     <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden">
       {/* Search Header */}
-      <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-slate-900/50">
+      <div className="p-4 border-b border-border flex items-center justify-between shrink-0 bg-muted/30">
         <div className="flex items-center gap-4">
-          <h3 className="font-syne font-semibold text-white">
+          <h3 className="font-syne font-semibold text-foreground">
             Companies
             <span className="text-teal-400 bg-teal-500/10 px-2 py-1 rounded text-sm ml-2 font-ibm-mono font-medium">
               {companies.length} Total
             </span>
           </h3>
           <div className="relative w-72">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search companies..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 text-sm rounded-lg pl-9 pr-3 py-2 h-[38px] text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500"
+              className="w-full bg-background border border-border text-sm rounded-lg pl-9 pr-3 py-2 h-[38px] text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500"
             />
           </div>
           <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
-            <SelectTrigger className="w-40 bg-slate-950 border-slate-800 text-slate-300 h-[38px] hover:bg-slate-900 transition-colors focus:ring-1 focus:ring-teal-500">
+            <SelectTrigger className="w-40 bg-background border-border text-foreground h-[38px] hover:bg-card transition-colors focus:ring-1 focus:ring-teal-500">
               <div className="flex items-center gap-2 text-sm">
                 <ListFilter className="w-4 h-4 text-teal-500" />
                 <SelectValue placeholder="Sort by" />
               </div>
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800 text-white">
-              <SelectItem value="alphabet" className="cursor-pointer focus:bg-slate-800 focus:text-white">Alphabetical</SelectItem>
-              <SelectItem value="recent" className="cursor-pointer focus:bg-slate-800 focus:text-white">Last Added</SelectItem>
+            <SelectContent className="bg-card border-border text-foreground">
+              <SelectItem value="alphabet" className="cursor-pointer focus:bg-muted focus:text-foreground">Alphabetical</SelectItem>
+              <SelectItem value="recent" className="cursor-pointer focus:bg-muted focus:text-foreground">Last Added</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -258,9 +258,9 @@ export function CompanyTable() {
       </div>
 
       {/* Table Content */}
-      <div className="relative flex-1 overflow-auto bg-slate-950/20">
-        <Table className="w-full text-left text-sm text-slate-300">
-          <TableHeader className="bg-slate-900 sticky top-0 border-b border-slate-800 text-xs uppercase font-medium text-slate-400 z-10 shadow-sm">
+      <div className="relative flex-1 overflow-auto bg-background/20">
+        <Table className="w-full text-left text-sm text-foreground">
+          <TableHeader className="bg-card sticky top-0 border-b border-border text-xs uppercase font-medium text-muted-foreground z-10 shadow-sm">
             <TableRow className="border-b-0 hover:bg-transparent">
               <TableHead className="w-12 px-6 py-4 h-auto">
                 <Checkbox 
@@ -284,16 +284,16 @@ export function CompanyTable() {
                   className="animate-pulse border-b-0 hover:bg-transparent"
                 >
                   <TableCell className="px-6 py-5">
-                    <div className="h-4 bg-slate-800/60 rounded w-4"></div>
+                    <div className="h-4 bg-muted/60 rounded w-4"></div>
                   </TableCell>
                   <TableCell className="px-6 py-5">
-                    <div className="h-4 bg-slate-800/60 rounded w-32"></div>
+                    <div className="h-4 bg-muted/60 rounded w-32"></div>
                   </TableCell>
                   <TableCell className="px-6 py-5">
-                    <div className="h-5 bg-slate-800/60 rounded-full w-10"></div>
+                    <div className="h-5 bg-muted/60 rounded-full w-10"></div>
                   </TableCell>
                   <TableCell className="px-6 py-5">
-                    <div className="h-4 bg-slate-800/60 rounded w-16 ml-auto"></div>
+                    <div className="h-4 bg-muted/60 rounded w-16 ml-auto"></div>
                   </TableCell>
                 </TableRow>
               ))
@@ -303,7 +303,7 @@ export function CompanyTable() {
                   {search ? (
                     <Empty>
                       <EmptyMedia>
-                        <Search className="w-5 h-5 text-slate-600" />
+                        <Search className="w-5 h-5 text-muted-foreground" />
                       </EmptyMedia>
                       <EmptyTitle>
                         No companies found matching "{search}"
@@ -312,7 +312,7 @@ export function CompanyTable() {
                   ) : (
                     <Empty>
                       <EmptyMedia>
-                        <Building2 className="w-5 h-5 text-slate-600" />
+                        <Building2 className="w-5 h-5 text-muted-foreground" />
                       </EmptyMedia>
                       <EmptyTitle>No companies yet</EmptyTitle>
                       <EmptyDescription>
@@ -326,7 +326,7 @@ export function CompanyTable() {
               filtered.map((company, index) => (
                 <motion.tr
                   key={company.id}
-                  className="hover:bg-slate-800/30 transition-all duration-200 group border-b-0 cursor-default"
+                  className="hover:bg-muted/40 transition-all duration-200 group border-b-0 cursor-default"
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: index * 0.05 }}
@@ -338,7 +338,7 @@ export function CompanyTable() {
                       aria-label={`Select ${company.name}`}
                     />
                   </TableCell>
-                  <TableCell className="px-6 py-5 font-medium text-slate-200">
+                  <TableCell className="px-6 py-5 font-medium text-foreground">
                     {company.name}
                   </TableCell>
                   <TableCell className="px-6 py-5">
@@ -357,14 +357,14 @@ export function CompanyTable() {
                           setEditingCompany(company);
                           setIsFormOpen(true);
                         }}
-                        className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-colors"
                         aria-label={`Edit company ${company.name}`}
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setDeletingId(company.id)}
-                        className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                        className="p-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                         aria-label={`Delete company ${company.name}`}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -398,22 +398,22 @@ export function CompanyTable() {
           }
         }}
       >
-        <AlertDialogContent className="bg-slate-900 border-slate-800">
+        <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">
+            <AlertDialogTitle className="text-foreground">
               Are you absolutely sure?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-muted-foreground">
               This action cannot be undone. This will permanently delete {isDeletingBulk ? "the selected companies" : "this company"} and remove all related quote rules.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-slate-800 text-white hover:bg-slate-700 border-slate-700">
+            <AlertDialogCancel className="bg-muted text-foreground hover:bg-accent border-border">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={isDeletingBulk ? confirmBulkDelete : confirmDelete}
-              className="bg-red-500 text-white hover:bg-red-600"
+              className="bg-red-500 text-foreground hover:bg-red-600"
             >
               Delete {isDeletingBulk ? "Selected" : "Company"}
             </AlertDialogAction>
