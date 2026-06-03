@@ -1,6 +1,6 @@
 "use client";
 
-import { QuoteResult, formatEGP } from "@/lib/quote-engine";
+import { QuoteResult, formatEGP, parseConditionLink } from "@/lib/quote-engine";
 import { cn } from "@/lib/utils";
 import { Copy, ChevronDown, Check } from "lucide-react";
 import { useState } from "react";
@@ -22,7 +22,10 @@ export function QuoteResultCard({ quote, rank }: Props) {
   const handleCopy = () => {
     const linksSection =
       quote.conditionLinks && quote.conditionLinks.length > 0
-        ? `\nCondition Links:\n${quote.conditionLinks.map((l, i) => `${i + 1}. ${l}`).join("\n")}`
+        ? `\nCondition Links:\n${quote.conditionLinks.map((l, i) => {
+            const parsed = parseConditionLink(l);
+            return `${i + 1}. ${parsed.label ? `${parsed.label}: ` : ""}${parsed.url}`;
+          }).join("\n")}`
         : "";
 
     const text = `Insurance Quote 🚘
@@ -210,20 +213,21 @@ ${quote.conditions.map((c) => `- ${c}`).join("\n")}${linksSection}`;
 
 function ConditionLinkRow({ link, index }: { link: string; index: number }) {
   const [copied, setCopied] = useState(false);
+  const parsed = parseConditionLink(link);
 
   const handleCopy = (e: React.MouseEvent) => {
     e.preventDefault();
-    navigator.clipboard.writeText(link);
+    navigator.clipboard.writeText(parsed.url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const displayUrl = (() => {
     try {
-      const url = new URL(link);
+      const url = new URL(parsed.url);
       return url.hostname + (url.pathname !== "/" ? url.pathname : "");
     } catch {
-      return link;
+      return parsed.url;
     }
   })();
 
@@ -233,13 +237,24 @@ function ConditionLinkRow({ link, index }: { link: string; index: number }) {
         {index + 1}.
       </span>
       <a
-        href={link}
+        href={parsed.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex-1 text-xs text-teal-500 hover:text-teal-400 font-ibm-mono truncate hover:underline transition-colors"
-        title={link}
+        className="flex-1 text-xs text-teal-500 hover:text-teal-400 font-ibm-mono truncate hover:underline transition-colors flex items-center gap-1.5"
+        title={parsed.url}
       >
-        {displayUrl}
+        {parsed.label ? (
+          <>
+            <span className="font-sans font-medium text-foreground hover:text-teal-400">
+              {parsed.label}
+            </span>
+            <span className="text-[10px] text-muted-foreground font-ibm-mono">
+              ({displayUrl})
+            </span>
+          </>
+        ) : (
+          displayUrl
+        )}
       </a>
       <button
         onClick={handleCopy}

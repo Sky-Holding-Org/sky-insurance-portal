@@ -176,3 +176,46 @@ function evaluateRule(
     isEligible: true,
   };
 }
+
+export interface ParsedConditionLink {
+  label: string;
+  url: string;
+}
+
+export function parseConditionLink(linkStr: string): ParsedConditionLink {
+  const trimmed = linkStr.trim();
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (parsed && typeof parsed === "object" && typeof parsed.url === "string") {
+        return {
+          label: parsed.label || "",
+          url: parsed.url,
+        };
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  if (trimmed.includes("|||")) {
+    const parts = trimmed.split("|||");
+    return {
+      label: parts[0].trim(),
+      url: parts.slice(1).join("|||").trim(),
+    };
+  }
+
+  return {
+    label: "",
+    url: trimmed,
+  };
+}
+
+export function serializeConditionLink(label: string, url: string): string {
+  const trimmedLabel = label.trim();
+  const trimmedUrl = url.trim();
+  if (!trimmedLabel) return trimmedUrl;
+  return JSON.stringify({ label: trimmedLabel, url: trimmedUrl });
+}
+

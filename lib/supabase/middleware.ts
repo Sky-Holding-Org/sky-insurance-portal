@@ -29,7 +29,13 @@ export async function updateSession(request: NextRequest) {
 
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
+
+  // Stale/invalid refresh token — clear the session cookie and treat as logged out
+  if (authError?.code === "refresh_token_not_found") {
+    await supabase.auth.signOut();
+  }
 
   const isAuthRoute = request.nextUrl.pathname.startsWith("/login");
   const isOpsRoute = request.nextUrl.pathname.startsWith("/operations");
@@ -48,12 +54,12 @@ export async function updateSession(request: NextRequest) {
     // Prevent authenticated users from visiting login page again
     if (isAuthRoute) {
       const url = request.nextUrl.clone();
-      url.pathname = role === "operation" ? "/operations/cars" : "/sales";
+      url.pathname = (role === "operation" || role === "super_admin") ? "/operations/cars" : "/sales";
       return NextResponse.redirect(url);
     }
 
     // Role-based protection: block "sales" role from operations
-    if (isOpsRoute && role !== "operation") {
+    if (isOpsRoute && role !== "operation" && role !== "super_admin") {
       const url = request.nextUrl.clone();
       url.pathname = "/sales";
       return NextResponse.redirect(url);

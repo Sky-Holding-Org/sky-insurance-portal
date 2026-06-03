@@ -28,7 +28,7 @@ export default function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [isOpsOpen, setIsOpsOpen] = useState(
-    pathname.startsWith("/operations"),
+    pathname.startsWith("/operations") || pathname.startsWith("/admin"),
   );
 
   const handleLogout = async () => {
@@ -60,18 +60,17 @@ export default function Sidebar({
   const opsItems = [
     {
       title: "Companies",
-      href:
-        role === "super_admin" ? "/admin/companies" : "/operations/companies",
+      href: "/operations/companies",
       icon: <Users className="w-4 h-4" />,
     },
     {
       title: "Cars Catalog",
-      href: role === "super_admin" ? "/admin/cars" : "/operations/cars",
+      href: "/operations/cars",
       icon: <CarFront className="w-4 h-4" />,
     },
     {
       title: "Quote Rules",
-      href: role === "super_admin" ? "/admin/quotes" : "/operations/quotes",
+      href: "/operations/quotes",
       icon: <ListFilter className="w-4 h-4" />,
     },
   ];

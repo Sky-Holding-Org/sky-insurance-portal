@@ -3,7 +3,12 @@
 import React, { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { X, Loader2, Plus, Minus } from "lucide-react";
-import type { QuoteRule } from "@/lib/quote-engine";
+import {
+  type QuoteRule,
+  parseConditionLink,
+  serializeConditionLink,
+  type ParsedConditionLink,
+} from "@/lib/quote-engine";
 import { logAction } from "@/lib/audit-logger";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -59,7 +64,9 @@ const FormattedNumberInput = ({
 }) => {
   const [displayValue, setDisplayValue] = useState(
     value !== null && value !== undefined
-      ? disableCommas ? value.toString() : value.toLocaleString("en-US", { maximumFractionDigits: 4 })
+      ? disableCommas
+        ? value.toString()
+        : value.toLocaleString("en-US", { maximumFractionDigits: 4 })
       : "",
   );
 
@@ -85,7 +92,9 @@ const FormattedNumberInput = ({
         } else {
           val = val.replace(/[^0-9]/g, "");
           if (val) {
-            val = disableCommas ? parseInt(val, 10).toString() : parseInt(val, 10).toLocaleString("en-US");
+            val = disableCommas
+              ? parseInt(val, 10).toString()
+              : parseInt(val, 10).toLocaleString("en-US");
           }
         }
         setDisplayValue(val);
@@ -100,7 +109,9 @@ const FormattedNumberInput = ({
         const rawNum = parseFloat(displayValue.replace(/,/g, ""));
         if (!isNaN(rawNum) && rawNum >= 0) {
           setDisplayValue(
-            disableCommas ? rawNum.toString() : rawNum.toLocaleString("en-US", { maximumFractionDigits: 4 }),
+            disableCommas
+              ? rawNum.toString()
+              : rawNum.toLocaleString("en-US", { maximumFractionDigits: 4 }),
           );
           onChange(rawNum);
         } else {
@@ -132,7 +143,15 @@ export function QuoteRuleFormSheet({
   const { makes, isLoading: isLoadingMakes } = useCarMakes();
   const currentYear = new Date().getFullYear();
 
-  const [formData, setFormData] = useState<Partial<QuoteRule & { minYear: number; maxYear: number | null; cutoffYear: number | null }>>({
+  const [formData, setFormData] = useState<
+    Partial<
+      QuoteRule & {
+        minYear: number;
+        maxYear: number | null;
+        cutoffYear: number | null;
+      }
+    >
+  >({
     companyId: rule?.companyId || (companies.length > 0 ? companies[0].id : ""),
     policyType: rule?.policyType || "any",
     fuelType: rule?.fuelType || "any",
@@ -140,9 +159,18 @@ export function QuoteRuleFormSheet({
     chineseTier: rule?.chineseTier || "any",
     priceMin: rule?.priceMin || 10000,
     priceMax: rule?.priceMax || null,
-    minYear: rule?.ageMinYears !== undefined ? currentYear - rule.ageMinYears : currentYear + 1,
-    maxYear: rule?.ageMaxYears !== undefined && rule.ageMaxYears !== null ? currentYear - rule.ageMaxYears : null,
-    cutoffYear: rule?.maxCarAgeYears !== undefined && rule.maxCarAgeYears !== null ? currentYear - rule.maxCarAgeYears : null,
+    minYear:
+      rule?.ageMinYears !== undefined
+        ? currentYear - rule.ageMinYears
+        : currentYear + 1,
+    maxYear:
+      rule?.ageMaxYears !== undefined && rule.ageMaxYears !== null
+        ? currentYear - rule.ageMaxYears
+        : null,
+    cutoffYear:
+      rule?.maxCarAgeYears !== undefined && rule.maxCarAgeYears !== null
+        ? currentYear - rule.maxCarAgeYears
+        : null,
     electricAgencyStatus: rule?.electricAgencyStatus || null,
     ratePercentage: rule?.ratePercentage || 2.5,
     conditions: rule?.conditions || [],
@@ -168,9 +196,7 @@ export function QuoteRuleFormSheet({
       : false,
   );
   const [enableExcludedMakes, setEnableExcludedMakes] = useState(
-    rule
-      ? !!rule.excludedMakeIds && rule.excludedMakeIds.length > 0
-      : false,
+    rule ? !!rule.excludedMakeIds && rule.excludedMakeIds.length > 0 : false,
   );
   const [enablePriceMin, setEnablePriceMin] = useState(
     rule ? !!rule.priceMin : false,
@@ -191,6 +217,10 @@ export function QuoteRuleFormSheet({
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [localLinks, setLocalLinks] = useState<ParsedConditionLink[]>(() => {
+    return (rule?.conditionLinks || []).map(parseConditionLink);
+  });
 
   const updateField = (
     field: keyof QuoteRule | "is_active" | "minYear" | "maxYear" | "cutoffYear",
@@ -215,20 +245,24 @@ export function QuoteRuleFormSheet({
     updateField("conditions", newConditions);
   };
 
-  const handleConditionLinkChange = (idx: number, value: string) => {
-    const newLinks = [...(formData.conditionLinks || [])];
-    newLinks[idx] = value;
-    updateField("conditionLinks", newLinks);
+  const handleConditionLinkChange = (
+    idx: number,
+    field: "label" | "url",
+    value: string,
+  ) => {
+    const newLinks = [...localLinks];
+    newLinks[idx] = { ...newLinks[idx], [field]: value };
+    setLocalLinks(newLinks);
   };
 
   const addConditionLink = () => {
-    updateField("conditionLinks", [...(formData.conditionLinks || []), ""]);
+    setLocalLinks([...localLinks, { label: "", url: "" }]);
   };
 
   const removeConditionLink = (idx: number) => {
-    const newLinks = [...(formData.conditionLinks || [])];
+    const newLinks = [...localLinks];
     newLinks.splice(idx, 1);
-    updateField("conditionLinks", newLinks);
+    setLocalLinks(newLinks);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -245,16 +279,26 @@ export function QuoteRuleFormSheet({
       chinese_tier: "any",
       price_min: enablePriceMin ? formData.priceMin || 0 : 0,
       price_max: enablePriceMax ? formData.priceMax : null,
-      age_min_years: enableAgeMin ? (currentYear - (formData.minYear || (currentYear + 1))) : -1, // defaults to next year
-      age_max_years: enableAgeMax && formData.maxYear ? currentYear - formData.maxYear : null,
-      max_car_age_years: enableCutoff && formData.cutoffYear ? currentYear - formData.cutoffYear : null,
+      age_min_years: enableAgeMin
+        ? currentYear - (formData.minYear || currentYear + 1)
+        : -1, // defaults to next year
+      age_max_years:
+        enableAgeMax && formData.maxYear
+          ? currentYear - formData.maxYear
+          : null,
+      max_car_age_years:
+        enableCutoff && formData.cutoffYear
+          ? currentYear - formData.cutoffYear
+          : null,
       electric_agency_status:
         enableFuelType && formData.fuelType === "electric"
           ? formData.electricAgencyStatus
           : null,
       rate_percentage: formData.ratePercentage,
       conditions: formData.conditions,
-      condition_links: formData.conditionLinks,
+      condition_links: localLinks
+        .filter((l) => l.url.trim() !== "")
+        .map((l) => serializeConditionLink(l.label, l.url)),
       label: formData.label,
       applicable_make_ids:
         enableMakes && formData.applicableMakeIds?.length
@@ -271,7 +315,9 @@ export function QuoteRuleFormSheet({
     const userId = userData?.user?.id || "";
     const userEmail = userData?.user?.email || "unknown@system";
 
-    const companyName = companies.find(c => c.id === formData.companyId)?.name || "Unknown Company";
+    const companyName =
+      companies.find((c) => c.id === formData.companyId)?.name ||
+      "Unknown Company";
 
     if (rule) {
       await supabase.from("quote_rules").update(payload).eq("id", rule.id);
@@ -292,7 +338,7 @@ export function QuoteRuleFormSheet({
         .insert(payload)
         .select("id")
         .single();
-      
+
       if (newRule) {
         logAction({
           userId,
@@ -345,7 +391,7 @@ export function QuoteRuleFormSheet({
           >
             {/* Sec 1: Company & Policy */}
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-border pb-2">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground border-b border-border pb-2">
                 1. Company & Policy
               </h3>
               <div className="grid grid-cols-2 gap-4">
@@ -431,7 +477,7 @@ export function QuoteRuleFormSheet({
 
             {/* Sec 2: Vehicle Criteria */}
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-border pb-2">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground border-b border-border pb-2">
                 2. Vehicle Matching Criteria
               </h3>
               <div className="grid grid-cols-2 gap-4">
@@ -458,7 +504,7 @@ export function QuoteRuleFormSheet({
                       <SelectContent className="border-border bg-card text-foreground z-60">
                         <SelectItem
                           value="any"
-                          className="hover:bg-muted focus:bg-muted cursor-pointer text-teal-400"
+                          className="hover:bg-muted focus:bg-muted cursor-pointer text-foreground"
                         >
                           Any Fuel Type
                         </SelectItem>
@@ -505,7 +551,7 @@ export function QuoteRuleFormSheet({
                       <SelectContent className="border-border bg-card text-foreground z-60">
                         <SelectItem
                           value="any"
-                          className="hover:bg-muted focus:bg-muted cursor-pointer text-teal-400"
+                          className="hover:bg-muted focus:bg-muted cursor-pointer text-foreground"
                         >
                           Any Condition
                         </SelectItem>
@@ -558,8 +604,8 @@ export function QuoteRuleFormSheet({
                           );
                         }}
                       >
-                        <ComboboxChips 
-                          ref={makesAnchor} 
+                        <ComboboxChips
+                          ref={makesAnchor}
                           className="w-full min-h-[38px] bg-background border-border rounded-lg text-sm text-foreground focus-within:ring-1 focus-within:ring-teal-500 focus-within:border-teal-500"
                         >
                           <ComboboxValue>
@@ -574,23 +620,27 @@ export function QuoteRuleFormSheet({
                                   </Badge>
                                 )}
                                 {values.map((value: any) => (
-                                  <ComboboxChip 
-                                    key={value.id} 
-                                    className="bg-teal-500/10 text-teal-400 border border-teal-500/20"
+                                  <ComboboxChip
+                                    key={value.id}
+                                    className="bg-teal-500/10 text-foreground border border-teal-500/20"
                                   >
                                     {value.name}
                                   </ComboboxChip>
                                 ))}
-                                <ComboboxChipsInput 
-                                  placeholder={(!values || values.length === 0) ? "Search and add makes..." : ""}
-                                  className="placeholder:text-muted-foreground bg-transparent text-foreground w-full" 
+                                <ComboboxChipsInput
+                                  placeholder={
+                                    !values || values.length === 0
+                                      ? "Search and add makes..."
+                                      : ""
+                                  }
+                                  className="placeholder:text-muted-foreground bg-transparent text-foreground w-full"
                                 />
                               </React.Fragment>
                             )}
                           </ComboboxValue>
                         </ComboboxChips>
-                        <ComboboxContent 
-                          anchor={makesAnchor} 
+                        <ComboboxContent
+                          anchor={makesAnchor}
                           className="border-border bg-card text-foreground z-100"
                         >
                           <ComboboxEmpty>No makes found</ComboboxEmpty>
@@ -644,8 +694,8 @@ export function QuoteRuleFormSheet({
                           );
                         }}
                       >
-                        <ComboboxChips 
-                          ref={excludedMakesAnchor} 
+                        <ComboboxChips
+                          ref={excludedMakesAnchor}
                           className="w-full min-h-[38px] bg-background border-red-500/30 rounded-lg text-sm text-foreground focus-within:ring-1 focus-within:ring-red-500/50 focus-within:border-red-500/50"
                         >
                           <ComboboxValue>
@@ -660,23 +710,27 @@ export function QuoteRuleFormSheet({
                                   </Badge>
                                 )}
                                 {values.map((value: any) => (
-                                  <ComboboxChip 
-                                    key={value.id} 
+                                  <ComboboxChip
+                                    key={value.id}
                                     className="bg-red-500/10 text-red-400 border border-red-500/20"
                                   >
                                     {value.name}
                                   </ComboboxChip>
                                 ))}
-                                <ComboboxChipsInput 
-                                  placeholder={(!values || values.length === 0) ? "Search makes to exclude..." : ""}
-                                  className="placeholder:text-muted-foreground bg-transparent text-foreground w-full" 
+                                <ComboboxChipsInput
+                                  placeholder={
+                                    !values || values.length === 0
+                                      ? "Search makes to exclude..."
+                                      : ""
+                                  }
+                                  className="placeholder:text-muted-foreground bg-transparent text-foreground w-full"
                                 />
                               </React.Fragment>
                             )}
                           </ComboboxValue>
                         </ComboboxChips>
-                        <ComboboxContent 
-                          anchor={excludedMakesAnchor} 
+                        <ComboboxContent
+                          anchor={excludedMakesAnchor}
                           className="border-border bg-card text-foreground z-100"
                         >
                           <ComboboxEmpty>No makes found</ComboboxEmpty>
@@ -746,7 +800,7 @@ export function QuoteRuleFormSheet({
 
             {/* Sec 3: Price & Age */}
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-border pb-2">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground border-b border-border pb-2">
                 3. Limits (Price & Age)
               </h3>
 
@@ -813,7 +867,8 @@ export function QuoteRuleFormSheet({
                       disableCommas
                       value={formData.minYear}
                       onChange={(val) => {
-                        if (val && val >= 1900 && val <= 2100) updateField("minYear", val);
+                        if (val && val >= 1900 && val <= 2100)
+                          updateField("minYear", val);
                         else updateField("minYear", val);
                       }}
                       className="w-full bg-background border border-border rounded-lg h-[38px] text-sm text-foreground font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
@@ -840,7 +895,8 @@ export function QuoteRuleFormSheet({
                       disableCommas
                       value={formData.maxYear}
                       onChange={(val) => {
-                        if (val && val >= 1900 && val <= 2100) updateField("maxYear", val);
+                        if (val && val >= 1900 && val <= 2100)
+                          updateField("maxYear", val);
                         else updateField("maxYear", val);
                       }}
                       className="w-full bg-background border border-border rounded-lg h-[38px] text-sm text-foreground font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
@@ -873,7 +929,8 @@ export function QuoteRuleFormSheet({
                       disableCommas
                       value={formData.cutoffYear}
                       onChange={(val) => {
-                        if (val && val >= 1900 && val <= 2100) updateField("cutoffYear", val);
+                        if (val && val >= 1900 && val <= 2100)
+                          updateField("cutoffYear", val);
                         else updateField("cutoffYear", val);
                       }}
                       className="w-full bg-background border border-red-500/30 rounded-lg h-[38px] text-sm text-foreground font-ibm-mono focus-visible:ring-1 focus-visible:ring-red-500/50 focus-visible:border-red-500/50"
@@ -890,7 +947,7 @@ export function QuoteRuleFormSheet({
 
             {/* Sec 4: Rating */}
             <section className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400 border-b border-border pb-2">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground border-b border-border pb-2">
                 4. Calculation & Rating
               </h3>
 
@@ -903,12 +960,12 @@ export function QuoteRuleFormSheet({
                   required
                   value={formData.ratePercentage}
                   onChange={(val) => updateField("ratePercentage", val || 0)}
-                  className="w-full max-w-xs bg-background border border-teal-500/50 rounded-lg h-[46px] text-lg text-teal-400 font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                  className="w-full max-w-xs bg-background border border-teal-500/50 rounded-lg h-[46px] text-lg text-foreground font-ibm-mono focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
                 />
               </div>
 
               <div className="bg-teal-500/10 border border-teal-500/20 p-4 rounded-lg flex items-center justify-between">
-                <span className="text-sm text-teal-400 font-medium">
+                <span className="text-sm text-foreground font-medium">
                   Example Calculation (1,000,000 EGP)
                 </span>
                 <span className="text-xl font-bold font-ibm-mono text-foreground">
@@ -920,7 +977,7 @@ export function QuoteRuleFormSheet({
             {/* Sec 5: Conditions */}
             <section className="space-y-4 mb-10">
               <div className="flex items-center justify-between border-b border-border pb-2">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
                   5. Arabic Conditions
                 </h3>
                 <button
@@ -963,9 +1020,9 @@ export function QuoteRuleFormSheet({
                   </div>
                 )}
               </div>
-              
+
               <div className="mt-8 flex items-center justify-between border-b border-border pb-2">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-teal-400">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
                   Condition Links (URLs)
                 </h3>
                 <button
@@ -978,7 +1035,7 @@ export function QuoteRuleFormSheet({
               </div>
 
               <div className="space-y-3 mt-4">
-                {formData.conditionLinks?.map((link, idx) => (
+                {localLinks.map((link, idx) => (
                   <div
                     key={idx}
                     className="flex items-start gap-2 animate-in fade-in slide-in-from-top-1"
@@ -986,23 +1043,39 @@ export function QuoteRuleFormSheet({
                     <button
                       type="button"
                       onClick={() => removeConditionLink(idx)}
-                      className="mt-1 p-1.5 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20 shrink-0"
+                      className="mt-1.5 p-1.5 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20 shrink-0"
                       aria-label={`Remove condition link ${idx + 1}`}
                     >
                       <Minus className="w-4 h-4" />
                     </button>
-                    <Input
-                      type="url"
-                      value={link}
-                      onChange={(e) =>
-                        handleConditionLinkChange(idx, e.target.value)
-                      }
-                      placeholder="https://example.com/condition"
-                      className="w-full bg-background border border-border rounded-lg h-10 text-sm text-foreground focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
-                    />
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <Input
+                        type="text"
+                        value={link.label}
+                        onChange={(e) =>
+                          handleConditionLinkChange(
+                            idx,
+                            "label",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Link Label (e.g. Terms PDF, Guidelines)"
+                        className="sm:col-span-1 bg-background border border-border rounded-lg h-10 text-sm text-foreground focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                      />
+                      <Input
+                        type="url"
+                        value={link.url}
+                        onChange={(e) =>
+                          handleConditionLinkChange(idx, "url", e.target.value)
+                        }
+                        placeholder="https://example.com/condition"
+                        className="sm:col-span-2 bg-background border border-border rounded-lg h-10 text-sm text-foreground focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                        required
+                      />
+                    </div>
                   </div>
                 ))}
-                {formData.conditionLinks?.length === 0 && (
+                {localLinks.length === 0 && (
                   <div className="text-center p-4 border border-dashed border-border rounded-lg text-muted-foreground text-sm">
                     No condition links added.
                   </div>
@@ -1030,7 +1103,7 @@ export function QuoteRuleFormSheet({
             type="submit"
             form="rule-form"
             disabled={isSubmitting}
-            className="flex-2 px-8 h-12 rounded-lg bg-teal-500 text-slate-950 font-bold flex items-center justify-center gap-2 hover:bg-teal-400 transition-colors disabled:opacity-50"
+            className="flex-2 px-8 h-12 rounded-lg bg-teal-500 text-slate-950 font-bold flex items-center justify-center gap-2 hover:bg-foreground transition-colors disabled:opacity-50"
           >
             {isSubmitting ? (
               <Loader2 className="w-5 h-5 animate-spin" />
