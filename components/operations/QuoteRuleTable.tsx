@@ -102,6 +102,7 @@ export function QuoteRuleTable() {
         conditions: r.conditions ?? [],
         conditionsEn: r.conditions_en ?? [],
         conditionLinks: r.condition_links ?? [],
+        attachments: r.attachments ?? [],
         label: r.label,
         applicableMakeIds: r.applicable_make_ids,
         excludedMakeIds: r.excluded_make_ids,

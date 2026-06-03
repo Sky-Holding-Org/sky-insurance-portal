@@ -33,10 +33,23 @@ export interface QuoteRule {
   conditions: string[];
   conditionsEn: string[];
   conditionLinks?: string[];
+  attachments?: RuleAttachment[];
   label?: string;
   applicableMakeIds?: string[]; // newly added restriction for GIG
   excludedMakeIds?: string[]; // newly added exclusion list
   is_active?: boolean;
+}
+
+export interface RuleAttachment {
+  uid: string;
+  label: string;
+  originalFileName: string;
+  publicId: string;
+  secureUrl: string;
+  resourceType: string;
+  fileSize: number;
+  isUploading?: boolean;
+  error?: string;
 }
 
 export interface QuoteResult {
@@ -50,6 +63,7 @@ export interface QuoteResult {
   conditions: string[];
   conditionsEn: string[];
   conditionLinks?: string[];
+  attachments?: RuleAttachment[];
   isEligible: true;
 }
 
@@ -173,6 +187,7 @@ function evaluateRule(
     conditions: rule.conditions,
     conditionsEn: rule.conditionsEn,
     conditionLinks: rule.conditionLinks || [],
+    attachments: rule.attachments || [],
     isEligible: true,
   };
 }

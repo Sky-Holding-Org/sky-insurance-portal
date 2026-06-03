@@ -8,6 +8,7 @@ import {
   parseConditionLink,
   serializeConditionLink,
   type ParsedConditionLink,
+  type RuleAttachment,
 } from "@/lib/quote-engine";
 import { logAction } from "@/lib/audit-logger";
 import { Switch } from "@/components/ui/switch";
@@ -222,6 +223,156 @@ export function QuoteRuleFormSheet({
     return (rule?.conditionLinks || []).map(parseConditionLink);
   });
 
+  const [localAttachments, setLocalAttachments] = useState<RuleAttachment[]>(() => {
+    return rule?.attachments || [];
+  });
+
+  const [filesMap, setFilesMap] = useState<Record<string, File>>({});
+
+  const retryUpload = (tempUid: string) => {
+    const file = filesMap[tempUid];
+    if (!file) return;
+
+    setLocalAttachments((prev) =>
+      prev.map((att) =>
+        att.uid === tempUid
+          ? {
+              ...att,
+              isUploading: true,
+              error: undefined,
+            }
+          : att
+      )
+    );
+
+    uploadFile(file, tempUid);
+  };
+
+  const uploadFile = async (file: File, tempUid: string) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/attachments/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      setLocalAttachments((prev) =>
+        prev.map((att) =>
+          att.uid === tempUid
+            ? {
+                ...att,
+                publicId: data.publicId,
+                secureUrl: data.secureUrl,
+                resourceType: data.resourceType,
+                fileSize: data.fileSize,
+                isUploading: false,
+              }
+            : att
+        )
+      );
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      setLocalAttachments((prev) =>
+        prev.map((att) =>
+          att.uid === tempUid
+            ? {
+                ...att,
+                isUploading: false,
+                error: err.message || "Upload failed",
+              }
+            : att
+        )
+      );
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const validExtensions = [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".jpg", ".jpeg", ".png", ".webp"];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    const newAttachments: RuleAttachment[] = [];
+    const newFilesMap = { ...filesMap };
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+
+      if (!validExtensions.includes(ext)) {
+        alert(`File "${file.name}" has an unsupported format. Supported formats: PDF, Word, Excel, Images.`);
+        continue;
+      }
+      if (file.size > maxSize) {
+        alert(`File "${file.name}" exceeds the 10MB limit.`);
+        continue;
+      }
+
+      const tempUid = Math.random().toString(36).substring(2, 9);
+      const tempAttachment: RuleAttachment = {
+        uid: tempUid,
+        label: file.name.substring(0, file.name.lastIndexOf(".")),
+        originalFileName: file.name,
+        publicId: "",
+        secureUrl: "",
+        resourceType: "",
+        fileSize: file.size,
+        isUploading: true,
+      } as any;
+
+      newAttachments.push(tempAttachment);
+      newFilesMap[tempUid] = file;
+      uploadFile(file, tempUid);
+    }
+
+    setFilesMap(newFilesMap);
+    setLocalAttachments((prev) => [...prev, ...newAttachments]);
+    e.target.value = "";
+  };
+
+  const handleAttachmentLabelChange = (idx: number, value: string) => {
+    const newAttachments = [...localAttachments];
+    newAttachments[idx] = { ...newAttachments[idx], label: value };
+    setLocalAttachments(newAttachments);
+  };
+
+  const removeAttachment = async (idx: number) => {
+    const att = localAttachments[idx];
+
+    if (att.publicId) {
+      const confirmed = window.confirm(
+        `Are you sure you want to permanently delete the attachment "${att.label || att.originalFileName}"? This will delete the file from Cloudinary.`
+      );
+      if (!confirmed) return;
+
+      try {
+        fetch("/api/attachments/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            publicId: att.publicId,
+            resourceType: att.resourceType,
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to delete attachment from Cloudinary:", err);
+      }
+    }
+
+    const newAttachments = [...localAttachments];
+    newAttachments.splice(idx, 1);
+    setLocalAttachments(newAttachments);
+  };
+
   const updateField = (
     field: keyof QuoteRule | "is_active" | "minYear" | "maxYear" | "cutoffYear",
     value: any,
@@ -299,6 +450,17 @@ export function QuoteRuleFormSheet({
       condition_links: localLinks
         .filter((l) => l.url.trim() !== "")
         .map((l) => serializeConditionLink(l.label, l.url)),
+      attachments: localAttachments
+        .filter((att) => !att.isUploading && !att.error && att.secureUrl)
+        .map((att) => ({
+          uid: att.uid,
+          label: att.label,
+          originalFileName: att.originalFileName,
+          publicId: att.publicId,
+          secureUrl: att.secureUrl,
+          resourceType: att.resourceType,
+          fileSize: att.fileSize,
+        })),
       label: formData.label,
       applicable_make_ids:
         enableMakes && formData.applicableMakeIds?.length
@@ -1078,6 +1240,99 @@ export function QuoteRuleFormSheet({
                 {localLinks.length === 0 && (
                   <div className="text-center p-4 border border-dashed border-border rounded-lg text-muted-foreground text-sm">
                     No condition links added.
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-8 flex items-center justify-between border-b border-border pb-2">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
+                  Attachments
+                </h3>
+                <div className="flex gap-2">
+                  <input
+                    type="file"
+                    id="attachment-upload-input"
+                    className="hidden"
+                    multiple
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
+                    onChange={handleFileChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById("attachment-upload-input")?.click()}
+                    className="text-xs bg-muted hover:bg-accent px-2 py-1 rounded text-foreground flex items-center gap-1 transition-colors"
+                  >
+                    <Plus className="w-3 h-3" /> Add Attachment
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-3 mt-4">
+                {localAttachments.map((att, idx) => (
+                  <div
+                    key={att.uid || idx}
+                    className="flex items-start gap-2 animate-in fade-in slide-in-from-top-1"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(idx)}
+                      className="mt-1.5 p-1.5 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20 shrink-0"
+                      aria-label={`Remove attachment ${idx + 1}`}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <Input
+                        type="text"
+                        value={att.label}
+                        onChange={(e) =>
+                          handleAttachmentLabelChange(idx, e.target.value)
+                        }
+                        placeholder="File Label (e.g. Terms PDF, Guidelines)"
+                        className="sm:col-span-1 bg-background border border-border rounded-lg h-10 text-sm text-foreground focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none"
+                        disabled={att.isUploading}
+                      />
+                      <div className="sm:col-span-2 flex items-center justify-between border border-border rounded-lg h-10 px-3 bg-muted/30 text-xs text-foreground">
+                        {att.isUploading ? (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Loader2 className="w-4 h-4 animate-spin text-teal-500" />
+                            <span>Uploading {att.originalFileName}...</span>
+                          </div>
+                        ) : att.error ? (
+                          <div className="flex items-center justify-between w-full bg-red-500/5 p-1 rounded">
+                            <span className="text-red-400 font-medium truncate max-w-[70%]" title={att.error}>
+                              Error: {att.error}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => retryUpload(att.uid)}
+                              className="text-teal-500 hover:text-teal-400 font-medium hover:underline transition-colors shrink-0 text-[11px]"
+                            >
+                              Retry
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between w-full">
+                            <span className="truncate max-w-[75%] font-ibm-mono text-muted-foreground" title={att.originalFileName}>
+                              {att.originalFileName} ({Math.round(att.fileSize / 1024)} KB)
+                            </span>
+                            <a
+                              href={`/api/attachments/download?url=${encodeURIComponent(att.secureUrl)}&filename=${encodeURIComponent(att.originalFileName)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-teal-500 hover:text-teal-400 font-medium hover:underline transition-colors shrink-0"
+                            >
+                              Download
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {localAttachments.length === 0 && (
+                  <div className="text-center p-4 border border-dashed border-border rounded-lg text-muted-foreground text-sm">
+                    No attachments uploaded.
                   </div>
                 )}
               </div>
