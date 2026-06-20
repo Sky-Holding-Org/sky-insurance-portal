@@ -250,18 +250,44 @@ export function QuoteRuleFormSheet({
 
   const uploadFile = async (file: File, tempUid: string) => {
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/attachments/upload", {
+      // 1. Fetch secure signature from Next.js server
+      const signRes = await fetch("/api/attachments/signature", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ folder: "quote_rule_attachments" }),
       });
 
-      const data = await res.json();
+      const signData = await signRes.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || "Upload failed");
+      if (!signRes.ok) {
+        throw new Error(signData.error || "Failed to get upload signature");
+      }
+
+      const { signature, timestamp, folder, apiKey, cloudName } = signData;
+
+      // 2. Prepare FormData for Cloudinary
+      const cloudinaryFormData = new FormData();
+      cloudinaryFormData.append("file", file);
+      cloudinaryFormData.append("api_key", apiKey);
+      cloudinaryFormData.append("timestamp", timestamp.toString());
+      cloudinaryFormData.append("signature", signature);
+      cloudinaryFormData.append("folder", folder);
+
+      // 3. Upload directly to Cloudinary
+      const uploadRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+        {
+          method: "POST",
+          body: cloudinaryFormData,
+        }
+      );
+
+      const uploadData = await uploadRes.json();
+
+      if (!uploadRes.ok) {
+        throw new Error(uploadData.error?.message || "Cloudinary upload failed");
       }
 
       setLocalAttachments((prev) =>
@@ -269,10 +295,10 @@ export function QuoteRuleFormSheet({
           att.uid === tempUid
             ? {
                 ...att,
-                publicId: data.publicId,
-                secureUrl: data.secureUrl,
-                resourceType: data.resourceType,
-                fileSize: data.fileSize,
+                publicId: uploadData.public_id,
+                secureUrl: uploadData.secure_url,
+                resourceType: uploadData.resource_type,
+                fileSize: uploadData.bytes || file.size,
                 isUploading: false,
               }
             : att
