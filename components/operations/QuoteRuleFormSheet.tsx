@@ -275,9 +275,14 @@ export function QuoteRuleFormSheet({
       cloudinaryFormData.append("signature", signature);
       cloudinaryFormData.append("folder", folder);
 
+      // Determine resource type: images go to 'image', documents/PDFs go to 'raw'
+      const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+      const isImage = [".jpg", ".jpeg", ".png", ".webp"].includes(ext);
+      const resourceType = isImage ? "image" : "raw";
+
       // 3. Upload directly to Cloudinary
       const uploadRes = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+        `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
         {
           method: "POST",
           body: cloudinaryFormData,
